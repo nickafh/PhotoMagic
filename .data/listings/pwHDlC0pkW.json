@@ -1,0 +1,412 @@
+{
+  "id": "pwHDlC0pkW",
+  "title": "Spring 2024 Collection",
+  "address": "1234 Test Street",
+  "sanitizedAddress": "1234_Test_Street",
+  "photoIds": [
+    "6btPhT-O7RKy",
+    "UJP-eFEdgO7p",
+    "XZHKLljFC1OW",
+    "Lk2o49mK6RIf",
+    "6mmJ56TX44SS",
+    "vUCpBc9oZeZS",
+    "3rFgnvu-dFvR",
+    "V5qcTABkS-YA",
+    "1OEVKNFQ5djj",
+    "mMQ20PdudzRt",
+    "1H8C_T2BslJV",
+    "6UCNeikZkEEK",
+    "94JIdp2Pbu6b",
+    "P5TiuPEkvmW7",
+    "E09qKetsgsBF",
+    "xl6OEadqkj7H",
+    "OJJgpc903wXe",
+    "q9TkHVk3JWlx",
+    "2ziW_HpqJ4IG",
+    "IQzUcZRnGwBx",
+    "PRJl0y_hFP0P",
+    "ucLinDfsMc1V",
+    "xxTqysPjccpf",
+    "4QUn7BDqY_v3",
+    "jyZEoJ9JJM7c",
+    "9_RFPQGS2Ubw",
+    "y5UaV1IPsynD",
+    "-C7yiCBQzKme",
+    "sSpE6iKzb6QJ",
+    "k-GgsDsnKGng",
+    "3zVbNx58j4ED",
+    "1OZCRCztXBLR",
+    "WiYO-n35aYLx",
+    "GA-hoeIkJxXu",
+    "2OGOq11FwcY0",
+    "J4y0aQLE-wGW",
+    "5kLyPAIiiKIi",
+    "i8ztBorwI1PY",
+    "l7rs6Yv9SBlr",
+    "9IrvEwTGgHq_"
+  ],
+  "photos": {
+    "6btPhT-O7RKy": {
+      "id": "6btPhT-O7RKy",
+      "listingId": "pwHDlC0pkW",
+      "originalName": "36IMG_3213W.jpg",
+      "filename": "6btPhT-O7RKy.jpg",
+      "mime": "image/jpeg",
+      "ext": "jpg",
+      "createdAt": 1769700904306
+    },
+    "UJP-eFEdgO7p": {
+      "id": "UJP-eFEdgO7p",
+      "listingId": "pwHDlC0pkW",
+      "originalName": "31IMG_5400.JPG",
+      "filename": "UJP-eFEdgO7p.jpg",
+      "mime": "image/jpeg",
+      "ext": "jpg",
+      "createdAt": 1769700904352
+    },
+    "XZHKLljFC1OW": {
+      "id": "XZHKLljFC1OW",
+      "listingId": "pwHDlC0pkW",
+      "originalName": "19IMG_1445G.JPG",
+      "filename": "XZHKLljFC1OW.jpg",
+      "mime": "image/jpeg",
+      "ext": "jpg",
+      "createdAt": 1769700904394
+    },
+    "Lk2o49mK6RIf": {
+      "id": "Lk2o49mK6RIf",
+      "listingId": "pwHDlC0pkW",
+      "originalName": "05IMG_5338N.JPG",
+      "filename": "Lk2o49mK6RIf.jpg",
+      "mime": "image/jpeg",
+      "ext": "jpg",
+      "createdAt": 1769700904442
+    },
+    "6mmJ56TX44SS": {
+      "id": "6mmJ56TX44SS",
+      "listingId": "pwHDlC0pkW",
+      "originalName": "22IMG_1473.JPG",
+      "filename": "6mmJ56TX44SS.jpg",
+      "mime": "image/jpeg",
+      "ext": "jpg",
+      "createdAt": 1769700904485
+    },
+    "vUCpBc9oZeZS": {
+      "id": "vUCpBc9oZeZS",
+      "listingId": "pwHDlC0pkW",
+      "originalName": "07IMG_5361.JPG",
+      "filename": "vUCpBc9oZeZS.jpg",
+      "mime": "image/jpeg",
+      "ext": "jpg",
+      "createdAt": 1769700904529
+    },
+    "3rFgnvu-dFvR": {
+      "id": "3rFgnvu-dFvR",
+      "listingId": "pwHDlC0pkW",
+      "originalName": "06IMG_5351N.JPG",
+      "filename": "3rFgnvu-dFvR.jpg",
+      "mime": "image/jpeg",
+      "ext": "jpg",
+      "createdAt": 1769700904564
+    },
+    "V5qcTABkS-YA": {
+      "id": "V5qcTABkS-YA",
+      "listingId": "pwHDlC0pkW",
+      "originalName": "27IMG_1539.JPG",
+      "filename": "V5qcTABkS-YA.jpg",
+      "mime": "image/jpeg",
+      "ext": "jpg",
+      "createdAt": 1769700904609
+    },
+    "1OEVKNFQ5djj": {
+      "id": "1OEVKNFQ5djj",
+      "listingId": "pwHDlC0pkW",
+      "originalName": "26IMG_5383.JPG",
+      "filename": "1OEVKNFQ5djj.jpg",
+      "mime": "image/jpeg",
+      "ext": "jpg",
+      "createdAt": 1769700904659
+    },
+    "mMQ20PdudzRt": {
+      "id": "mMQ20PdudzRt",
+      "listingId": "pwHDlC0pkW",
+      "originalName": "40IMG_4154.jpg",
+      "filename": "mMQ20PdudzRt.jpg",
+      "mime": "image/jpeg",
+      "ext": "jpg",
+      "createdAt": 1769700904698
+    },
+    "1H8C_T2BslJV": {
+      "id": "1H8C_T2BslJV",
+      "listingId": "pwHDlC0pkW",
+      "originalName": "30IMG_5389.JPG",
+      "filename": "1H8C_T2BslJV.jpg",
+      "mime": "image/jpeg",
+      "ext": "jpg",
+      "createdAt": 1769700904746
+    },
+    "6UCNeikZkEEK": {
+      "id": "6UCNeikZkEEK",
+      "listingId": "pwHDlC0pkW",
+      "originalName": "14IMG_2640W.jpg",
+      "filename": "6UCNeikZkEEK.jpg",
+      "mime": "image/jpeg",
+      "ext": "jpg",
+      "createdAt": 1769700904793
+    },
+    "94JIdp2Pbu6b": {
+      "id": "94JIdp2Pbu6b",
+      "listingId": "pwHDlC0pkW",
+      "originalName": "37IMG_3313W.jpg",
+      "filename": "94JIdp2Pbu6b.jpg",
+      "mime": "image/jpeg",
+      "ext": "jpg",
+      "createdAt": 1769700904841
+    },
+    "P5TiuPEkvmW7": {
+      "id": "P5TiuPEkvmW7",
+      "listingId": "pwHDlC0pkW",
+      "originalName": "39IMG_3533W.jpg",
+      "filename": "P5TiuPEkvmW7.jpg",
+      "mime": "image/jpeg",
+      "ext": "jpg",
+      "createdAt": 1769700904882
+    },
+    "E09qKetsgsBF": {
+      "id": "E09qKetsgsBF",
+      "listingId": "pwHDlC0pkW",
+      "originalName": "35IMG_1598G.JPG",
+      "filename": "E09qKetsgsBF.jpg",
+      "mime": "image/jpeg",
+      "ext": "jpg",
+      "createdAt": 1769700904936
+    },
+    "xl6OEadqkj7H": {
+      "id": "xl6OEadqkj7H",
+      "listingId": "pwHDlC0pkW",
+      "originalName": "17IMG_1429.JPG",
+      "filename": "xl6OEadqkj7H.jpg",
+      "mime": "image/jpeg",
+      "ext": "jpg",
+      "createdAt": 1769700904987
+    },
+    "OJJgpc903wXe": {
+      "id": "OJJgpc903wXe",
+      "listingId": "pwHDlC0pkW",
+      "originalName": "29IMG_1535.JPG",
+      "filename": "OJJgpc903wXe.jpg",
+      "mime": "image/jpeg",
+      "ext": "jpg",
+      "createdAt": 1769700905037
+    },
+    "q9TkHVk3JWlx": {
+      "id": "q9TkHVk3JWlx",
+      "listingId": "pwHDlC0pkW",
+      "originalName": "24IMG_1493.JPG",
+      "filename": "q9TkHVk3JWlx.jpg",
+      "mime": "image/jpeg",
+      "ext": "jpg",
+      "createdAt": 1769700905076
+    },
+    "2ziW_HpqJ4IG": {
+      "id": "2ziW_HpqJ4IG",
+      "listingId": "pwHDlC0pkW",
+      "originalName": "08IMG_5366.JPG",
+      "filename": "2ziW_HpqJ4IG.jpg",
+      "mime": "image/jpeg",
+      "ext": "jpg",
+      "createdAt": 1769700905115
+    },
+    "IQzUcZRnGwBx": {
+      "id": "IQzUcZRnGwBx",
+      "listingId": "pwHDlC0pkW",
+      "originalName": "02IMG_4524W.jpg",
+      "filename": "IQzUcZRnGwBx.jpg",
+      "mime": "image/jpeg",
+      "ext": "jpg",
+      "createdAt": 1769700905152
+    },
+    "PRJl0y_hFP0P": {
+      "id": "PRJl0y_hFP0P",
+      "listingId": "pwHDlC0pkW",
+      "originalName": "12IMG_5369.JPG",
+      "filename": "PRJl0y_hFP0P.jpg",
+      "mime": "image/jpeg",
+      "ext": "jpg",
+      "createdAt": 1769700905198
+    },
+    "ucLinDfsMc1V": {
+      "id": "ucLinDfsMc1V",
+      "listingId": "pwHDlC0pkW",
+      "originalName": "03IMG_5316NF.jpg",
+      "filename": "ucLinDfsMc1V.jpg",
+      "mime": "image/jpeg",
+      "ext": "jpg",
+      "createdAt": 1769700905235
+    },
+    "xxTqysPjccpf": {
+      "id": "xxTqysPjccpf",
+      "listingId": "pwHDlC0pkW",
+      "originalName": "10IMG_1411.JPG",
+      "filename": "xxTqysPjccpf.jpg",
+      "mime": "image/jpeg",
+      "ext": "jpg",
+      "createdAt": 1769700905275
+    },
+    "4QUn7BDqY_v3": {
+      "id": "4QUn7BDqY_v3",
+      "listingId": "pwHDlC0pkW",
+      "originalName": "18IMG_1426.JPG",
+      "filename": "4QUn7BDqY_v3.jpg",
+      "mime": "image/jpeg",
+      "ext": "jpg",
+      "createdAt": 1769700905315
+    },
+    "jyZEoJ9JJM7c": {
+      "id": "jyZEoJ9JJM7c",
+      "listingId": "pwHDlC0pkW",
+      "originalName": "11IMG_5419.JPG",
+      "filename": "jyZEoJ9JJM7c.jpg",
+      "mime": "image/jpeg",
+      "ext": "jpg",
+      "createdAt": 1769700905361
+    },
+    "9_RFPQGS2Ubw": {
+      "id": "9_RFPQGS2Ubw",
+      "listingId": "pwHDlC0pkW",
+      "originalName": "21IMG_1449.JPG",
+      "filename": "9_RFPQGS2Ubw.jpg",
+      "mime": "image/jpeg",
+      "ext": "jpg",
+      "createdAt": 1769700905405
+    },
+    "y5UaV1IPsynD": {
+      "id": "y5UaV1IPsynD",
+      "listingId": "pwHDlC0pkW",
+      "originalName": "23IMG_1480.JPG",
+      "filename": "y5UaV1IPsynD.jpg",
+      "mime": "image/jpeg",
+      "ext": "jpg",
+      "createdAt": 1769700905450
+    },
+    "-C7yiCBQzKme": {
+      "id": "-C7yiCBQzKme",
+      "listingId": "pwHDlC0pkW",
+      "originalName": "32IMG_5411.JPG",
+      "filename": "-C7yiCBQzKme.jpg",
+      "mime": "image/jpeg",
+      "ext": "jpg",
+      "createdAt": 1769700905498
+    },
+    "sSpE6iKzb6QJ": {
+      "id": "sSpE6iKzb6QJ",
+      "listingId": "pwHDlC0pkW",
+      "originalName": "38IMG_1635.JPG",
+      "filename": "sSpE6iKzb6QJ.jpg",
+      "mime": "image/jpeg",
+      "ext": "jpg",
+      "createdAt": 1769700905546
+    },
+    "k-GgsDsnKGng": {
+      "id": "k-GgsDsnKGng",
+      "listingId": "pwHDlC0pkW",
+      "originalName": "04IMG_5329N.JPG",
+      "filename": "k-GgsDsnKGng.jpg",
+      "mime": "image/jpeg",
+      "ext": "jpg",
+      "createdAt": 1769700905591
+    },
+    "3zVbNx58j4ED": {
+      "id": "3zVbNx58j4ED",
+      "listingId": "pwHDlC0pkW",
+      "originalName": "15IMG_1594.JPG",
+      "filename": "3zVbNx58j4ED.jpg",
+      "mime": "image/jpeg",
+      "ext": "jpg",
+      "createdAt": 1769700905636
+    },
+    "1OZCRCztXBLR": {
+      "id": "1OZCRCztXBLR",
+      "listingId": "pwHDlC0pkW",
+      "originalName": "33IMG_5398.JPG",
+      "filename": "1OZCRCztXBLR.jpg",
+      "mime": "image/jpeg",
+      "ext": "jpg",
+      "createdAt": 1769700905681
+    },
+    "WiYO-n35aYLx": {
+      "id": "WiYO-n35aYLx",
+      "listingId": "pwHDlC0pkW",
+      "originalName": "25IMG_1497.JPG",
+      "filename": "WiYO-n35aYLx.jpg",
+      "mime": "image/jpeg",
+      "ext": "jpg",
+      "createdAt": 1769700905723
+    },
+    "GA-hoeIkJxXu": {
+      "id": "GA-hoeIkJxXu",
+      "listingId": "pwHDlC0pkW",
+      "originalName": "20IMG_1459G.JPG",
+      "filename": "GA-hoeIkJxXu.jpg",
+      "mime": "image/jpeg",
+      "ext": "jpg",
+      "createdAt": 1769700905764
+    },
+    "2OGOq11FwcY0": {
+      "id": "2OGOq11FwcY0",
+      "listingId": "pwHDlC0pkW",
+      "originalName": "28IMG_1550.JPG",
+      "filename": "2OGOq11FwcY0.jpg",
+      "mime": "image/jpeg",
+      "ext": "jpg",
+      "createdAt": 1769700905809
+    },
+    "J4y0aQLE-wGW": {
+      "id": "J4y0aQLE-wGW",
+      "listingId": "pwHDlC0pkW",
+      "originalName": "34IMG_1585.JPG",
+      "filename": "J4y0aQLE-wGW.jpg",
+      "mime": "image/jpeg",
+      "ext": "jpg",
+      "createdAt": 1769700905855
+    },
+    "5kLyPAIiiKIi": {
+      "id": "5kLyPAIiiKIi",
+      "listingId": "pwHDlC0pkW",
+      "originalName": "13IMG_1356.JPG",
+      "filename": "5kLyPAIiiKIi.jpg",
+      "mime": "image/jpeg",
+      "ext": "jpg",
+      "createdAt": 1769700905908
+    },
+    "i8ztBorwI1PY": {
+      "id": "i8ztBorwI1PY",
+      "listingId": "pwHDlC0pkW",
+      "originalName": "01IMG_4134W.jpg",
+      "filename": "i8ztBorwI1PY.jpg",
+      "mime": "image/jpeg",
+      "ext": "jpg",
+      "createdAt": 1769700905948
+    },
+    "l7rs6Yv9SBlr": {
+      "id": "l7rs6Yv9SBlr",
+      "listingId": "pwHDlC0pkW",
+      "originalName": "16IMG_5380.JPG",
+      "filename": "l7rs6Yv9SBlr.jpg",
+      "mime": "image/jpeg",
+      "ext": "jpg",
+      "createdAt": 1769700905987
+    },
+    "9IrvEwTGgHq_": {
+      "id": "9IrvEwTGgHq_",
+      "listingId": "pwHDlC0pkW",
+      "originalName": "09IMG_1419.JPG",
+      "filename": "9IrvEwTGgHq_.jpg",
+      "mime": "image/jpeg",
+      "ext": "jpg",
+      "createdAt": 1769700906024
+    }
+  },
+  "createdAt": 1769700892876,
+  "updatedAt": 1769700906060
+}
