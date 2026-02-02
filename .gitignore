@@ -39,3 +39,9 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# data files (keep directory structure with .gitkeep)
+.data/files/*
+.data/thumbs/*
+.data/listings/*
+!.data/**/.gitkeep
