@@ -1,0 +1,16 @@
+services:
+  app:
+    build: .
+    ports:
+      - "3000:3000"
+    env_file:
+      - .env.production
+    volumes:
+      - photomagic-data:/app/data
+    environment:
+      # Override for local SQLite; use Turso URL in .env.production for production
+      - DATABASE_URL=file:/app/data/photomagic.db
+    restart: unless-stopped
+
+volumes:
+  photomagic-data:

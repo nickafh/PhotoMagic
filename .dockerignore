@@ -1,0 +1,31 @@
+# Dependencies
+node_modules
+npm-debug.log*
+.pnpm-debug.log*
+.yarn*
+
+# Build output
+.next
+out
+dist
+
+# Development
+.git
+.gitignore
+.env
+.env.*
+!.env.example
+
+# IDE
+.vscode
+.idea
+
+# Local DB (use volume or Turso in prod)
+*.db
+photomagic.db
+
+# Misc
+README.md
+CLAUDE.md
+mobile/
+.DS_Store

@@ -1,7 +1,7 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  // Enable React Compiler for automatic memoization
+  output: "standalone",
   reactCompiler: true,
   experimental: {
     viewTransition: true,
