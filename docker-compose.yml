@@ -6,7 +6,7 @@ services:
     env_file:
       - .env
     volumes:
-      - /photomagic.db:/app/data/photomagic.db
+      - photomagic-data:/app/data
     environment:
       - DATABASE_URL=file:/app/data/photomagic.db
     restart: unless-stopped
