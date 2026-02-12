@@ -6,9 +6,9 @@ const nextConfig: NextConfig = {
   experimental: {
     viewTransition: true,
     // Increase body size limit for photo uploads
-    proxyClientMaxBodySize: "300mb",
+    proxyClientMaxBodySize: "1500mb",
     serverActions: {
-      bodySizeLimit: "300mb",
+      bodySizeLimit: "1500mb",
     },
   },
 };
