@@ -37,9 +37,11 @@ COPY --from=builder /app/public ./public
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 
-# Copy Prisma schema, migrations, and CLI for migrate deploy
+# Copy Prisma schema, migrations, config, and CLI for migrate deploy
 COPY --from=builder /app/prisma ./prisma
+COPY --from=builder /app/prisma.config.ts ./prisma.config.ts
 COPY --from=builder /app/node_modules/prisma ./node_modules/prisma
+COPY --from=builder /app/node_modules/dotenv ./node_modules/dotenv
 COPY --from=builder /app/src/generated ./src/generated
 
 # Data dir for SQLite (when using file: DATABASE_URL)
@@ -51,4 +53,4 @@ ENV PORT=3000
 ENV HOSTNAME="0.0.0.0"
 
 # Run migrations then start the server
-CMD ["sh", "-c", "npx prisma migrate deploy 2>/dev/null || true && node server.js"]
+CMD ["sh", "-c", "npx prisma migrate deploy && node server.js"]
