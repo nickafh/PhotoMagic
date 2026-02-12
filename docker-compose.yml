@@ -6,9 +6,8 @@ services:
     env_file:
       - .env
     volumes:
-      - photomagic-data:/app/data
+      - /photomagic.db:/app/data/photomagic.db
     environment:
-      # Override for local SQLite; use Turso URL in .env.production for production
       - DATABASE_URL=file:/app/data/photomagic.db
     restart: unless-stopped
 
