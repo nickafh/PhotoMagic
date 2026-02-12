@@ -24,6 +24,9 @@ RUN npx prisma generate
 ENV NEXT_TELEMETRY_DISABLED=1
 RUN npm run build
 
+# Create a seed database with migrations applied
+RUN DATABASE_URL="file:./seed.db" npx prisma migrate deploy
+
 # ---- Runner ----
 FROM base AS runner
 ENV NODE_ENV=production
@@ -37,10 +40,9 @@ COPY --from=builder /app/public ./public
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 
-# Copy Prisma migrations and generated client
-COPY --from=builder /app/prisma ./prisma
+# Copy generated Prisma client and seed database
 COPY --from=builder /app/src/generated ./src/generated
-COPY --from=builder /app/scripts/init-db.mjs ./scripts/init-db.mjs
+COPY --from=builder --chown=nextjs:nodejs /app/seed.db ./seed.db
 
 # Data dir for SQLite (when using file: DATABASE_URL)
 RUN mkdir -p /app/data && chown nextjs:nodejs /app/data
@@ -50,5 +52,5 @@ EXPOSE 3000
 ENV PORT=3000
 ENV HOSTNAME="0.0.0.0"
 
-# Run migrations then start the server
-CMD ["sh", "-c", "node scripts/init-db.mjs && node server.js"]
+# Copy seed database if volume is empty, then start the server
+CMD ["sh", "-c", "if [ ! -f /app/data/photomagic.db ]; then cp /app/seed.db /app/data/photomagic.db; echo '[init] Created database from seed'; fi && node server.js"]
