@@ -9,6 +9,7 @@ import {
   useSensor,
   useSensors,
   type DragEndEvent,
+  type DragOverEvent,
   type DragStartEvent,
   type UniqueIdentifier,
 } from "@dnd-kit/core";
@@ -18,11 +19,26 @@ import {
   rectSortingStrategy,
   useSortable,
 } from "@dnd-kit/sortable";
+import type { PhotoMeta } from "@/lib/types";
+
+function useIsMobile() {
+  const [isMobile, setIsMobile] = useState(false);
+  useEffect(() => {
+    const mq = window.matchMedia("(max-width: 767px)");
+    setIsMobile(mq.matches);
+    const handler = () => setIsMobile(mq.matches);
+    mq.addEventListener("change", handler);
+    return () => mq.removeEventListener("change", handler);
+  }, []);
+  return isMobile;
+}
 
 type PhotoGridProps = {
   listingId: string;
   photoIds: string[];
-  onReorder: (nextPhotoIds: string[]) => void;
+  photos: Record<string, PhotoMeta>;
+  onReorder?: (nextPhotoIds: string[]) => void;
+  onToggleExclude?: (photoId: string) => void;
 };
 
 // Preload images into browser cache
@@ -36,10 +52,16 @@ function preloadImages(listingId: string, photoIds: string[]) {
 export default function PhotoGrid({
   listingId,
   photoIds,
+  photos,
   onReorder,
+  onToggleExclude,
 }: PhotoGridProps) {
-  const [localIds, setLocalIds] = useState<string[]>(photoIds);
+  // Filter to only show non-excluded photos
+  const activePhotoIds = photoIds.filter((id) => !photos[id]?.excluded);
+
+  const [localIds, setLocalIds] = useState<string[]>(activePhotoIds);
   const [activeId, setActiveId] = useState<UniqueIdentifier | null>(null);
+  const [overId, setOverId] = useState<UniqueIdentifier | null>(null);
   const draggingRef = useRef(false);
   const preloadedRef = useRef(false);
 
@@ -52,22 +74,29 @@ export default function PhotoGrid({
   }, [listingId, photoIds]);
 
   useEffect(() => {
-    if (!draggingRef.current) setLocalIds(photoIds);
-  }, [photoIds]);
+    if (!draggingRef.current) {
+      setLocalIds(activePhotoIds);
+    }
+  }, [activePhotoIds.join(",")]);
 
-  // Use Mouse and Touch sensors for better performance
+  // Mouse and Touch sensors. On mobile, use longer delay so scroll isn't stolen; drag handle gives clear target.
   const sensors = useSensors(
     useSensor(MouseSensor, {
-      activationConstraint: { distance: 5 },
+      activationConstraint: { distance: onReorder ? 5 : Infinity },
     }),
     useSensor(TouchSensor, {
-      activationConstraint: { delay: 150, tolerance: 5 },
+      activationConstraint: { delay: onReorder ? 250 : Infinity, tolerance: 8 },
     })
   );
 
   const handleDragStart = useCallback((e: DragStartEvent) => {
     draggingRef.current = true;
     setActiveId(e.active.id);
+    setOverId(null);
+  }, []);
+
+  const handleDragOver = useCallback((e: DragOverEvent) => {
+    setOverId(e.over?.id ?? null);
   }, []);
 
   const handleDragEnd = useCallback(
@@ -76,8 +105,9 @@ export default function PhotoGrid({
       const { active, over } = e;
 
       setActiveId(null);
+      setOverId(null);
 
-      if (!over || active.id === over.id) return;
+      if (!over || active.id === over.id || !onReorder) return;
 
       const oldIndex = localIds.indexOf(String(active.id));
       const newIndex = localIds.indexOf(String(over.id));
@@ -85,24 +115,30 @@ export default function PhotoGrid({
 
       const next = arrayMove(localIds, oldIndex, newIndex);
       setLocalIds(next);
-      onReorder(next);
+
+      // Combine with excluded photos at the end for the full order
+      const excludedIds = photoIds.filter((id) => photos[id]?.excluded);
+      onReorder([...next, ...excludedIds]);
     },
-    [localIds, onReorder]
+    [localIds, photoIds, photos, onReorder]
   );
 
   const handleDragCancel = useCallback(() => {
     draggingRef.current = false;
     setActiveId(null);
+    setOverId(null);
   }, []);
 
   const activeIndex = activeId ? localIds.indexOf(String(activeId)) : -1;
 
   if (localIds.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center py-20 text-slate-400">
-        <span className="material-symbols-outlined text-6xl mb-4">add_photo_alternate</span>
-        <p className="text-lg font-medium">No photos yet</p>
-        <p className="text-sm">Upload photos to get started</p>
+      <div className="flex flex-col items-center justify-center py-20 text-slate-400 animate-fade-in">
+        <div className="w-20 h-20 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center mb-6">
+          <span className="material-symbols-outlined text-4xl text-slate-300 dark:text-slate-600">add_photo_alternate</span>
+        </div>
+        <p className="text-lg font-display text-slate-600 dark:text-slate-300 mb-1">No photos yet</p>
+        <p className="text-sm text-slate-400">Upload photos to get started</p>
       </div>
     );
   }
@@ -111,11 +147,12 @@ export default function PhotoGrid({
     <DndContext
       sensors={sensors}
       onDragStart={handleDragStart}
+      onDragOver={handleDragOver}
       onDragEnd={handleDragEnd}
       onDragCancel={handleDragCancel}
     >
       <SortableContext items={localIds} strategy={rectSortingStrategy}>
-        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
+        <div className="grid grid-cols-4 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-1 md:gap-4 stagger-children">
           {localIds.map((id, idx) => (
             <SortableTile
               key={id}
@@ -123,6 +160,8 @@ export default function PhotoGrid({
               index={idx + 1}
               listingId={listingId}
               isDragging={id === String(activeId)}
+              isDropTarget={id === String(overId)}
+              onExclude={onToggleExclude ? () => onToggleExclude(id) : undefined}
             />
           ))}
         </div>
@@ -146,6 +185,8 @@ type SortableTileProps = {
   index: number;
   listingId: string;
   isDragging: boolean;
+  isDropTarget: boolean;
+  onExclude?: () => void;
 };
 
 const SortableTile = memo(function SortableTile({
@@ -153,7 +194,11 @@ const SortableTile = memo(function SortableTile({
   index,
   listingId,
   isDragging,
+  isDropTarget,
+  onExclude,
 }: SortableTileProps) {
+  const [isHovered, setIsHovered] = useState(false);
+  const isMobile = useIsMobile();
   const {
     attributes,
     listeners,
@@ -162,7 +207,6 @@ const SortableTile = memo(function SortableTile({
     transition,
   } = useSortable({ id });
 
-  // Use translate3d for GPU acceleration
   const style: React.CSSProperties = {
     transform: transform
       ? `translate3d(${transform.x}px, ${transform.y}px, 0)`
@@ -178,25 +222,83 @@ const SortableTile = memo(function SortableTile({
     <div
       ref={setNodeRef}
       style={style}
-      {...attributes}
-      {...listeners}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+      className="group relative"
     >
+      {/* Exclude button above drag overlay so it stays clickable on desktop */}
+      {onExclude && (
+        <button
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation();
+            onExclude();
+          }}
+          onPointerDown={(e) => e.stopPropagation()}
+          className={`
+            absolute top-2 left-2 z-20 w-8 h-8
+            hidden md:flex
+            bg-red-500/90 hover:bg-red-600 backdrop-blur-sm
+            rounded-full items-center justify-center
+            border-2 border-white/90 shadow-lg
+            transition-all duration-200
+            ${isHovered ? "opacity-100 scale-100" : "opacity-0 scale-90"}
+          `}
+          title="Mark as Do Not Use"
+        >
+          <span className="material-symbols-outlined text-white text-base">close</span>
+        </button>
+      )}
+
+      {/* One drag target: on mobile a small handle (avoids stealing scroll); on desktop the whole tile. */}
+      {isMobile ? (
+        <div
+          className="absolute top-1 left-1 right-1 z-10 flex justify-center py-2 rounded-t-lg bg-black/50 touch-none cursor-grab active:cursor-grabbing"
+          style={{ touchAction: "none" }}
+          {...attributes}
+          {...listeners}
+          aria-label="Hold to drag and reorder"
+        >
+          <span className="material-symbols-outlined text-white/90 text-lg">drag_indicator</span>
+        </div>
+      ) : (
+        <div
+          className="absolute inset-0 z-10 cursor-grab active:cursor-grabbing"
+          aria-label="Drag to reorder photo"
+          {...attributes}
+          {...listeners}
+        />
+      )}
       <div
         className={`
-          relative aspect-square rounded-xl overflow-hidden
-          bg-slate-200 dark:bg-slate-800
-          ${isDragging ? "opacity-30" : ""}
+          photo-tile
+          ${isDragging ? "opacity-30 scale-95" : ""}
+          ${!isDragging && "md:hover:shadow-xl md:hover:-translate-y-1"}
+          ${isDropTarget ? "ring-4 ring-gold ring-offset-2 ring-offset-slate-100 dark:ring-offset-slate-900 shadow-lg shadow-gold/20" : ""}
         `}
       >
         <img
           src={`/api/photos/${id}?listingId=${listingId}&thumb=1`}
           alt=""
-          className="absolute inset-0 w-full h-full object-cover"
+          className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 ease-out md:group-hover:scale-[1.03]"
           draggable={false}
           loading={index <= 8 ? "eager" : "lazy"}
         />
-        <div className="absolute bottom-2 right-2 w-7 h-7 bg-gold rounded-full flex items-center justify-center border-2 border-white shadow-md">
-          <span className="text-xs font-bold text-white">{index}</span>
+
+        {/* Subtle gradient overlay on hover */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+
+        {/* Number badge - premium gold gradient */}
+        <div
+          className={`
+            photo-badge
+            bottom-1 right-1 w-5 h-5
+            md:bottom-2.5 md:right-2.5 md:w-8 md:h-8
+            text-[9px] md:text-sm
+            ${!isDragging && "md:group-hover:scale-110"}
+          `}
+        >
+          {index}
         </div>
       </div>
     </div>
@@ -218,16 +320,17 @@ const OverlayTile = memo(function OverlayTile({ index, listingId, photoId }: Ove
         willChange: "transform",
         cursor: "grabbing",
       }}
+      className="animate-scale-in"
     >
-      <div className="relative w-full h-full rounded-xl overflow-hidden bg-slate-200 dark:bg-slate-800 shadow-2xl">
+      <div className="relative w-full h-full rounded-xl overflow-hidden bg-slate-200 dark:bg-slate-800 shadow-2xl ring-4 ring-gold/30">
         <img
           src={`/api/photos/${photoId}?listingId=${listingId}&thumb=1`}
           alt=""
-          className="absolute inset-0 w-full h-full object-cover"
+          className="absolute inset-0 w-full h-full object-cover scale-105"
           draggable={false}
         />
-        <div className="absolute bottom-2 right-2 w-7 h-7 bg-gold rounded-full flex items-center justify-center border-2 border-white shadow-md">
-          <span className="text-xs font-bold text-white">{index}</span>
+        <div className="photo-badge bottom-2.5 right-2.5 w-8 h-8 text-sm scale-110">
+          {index}
         </div>
       </div>
     </div>

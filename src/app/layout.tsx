@@ -1,10 +1,19 @@
 import "./globals.css";
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { Source_Sans_3, Amiri } from "next/font/google";
+import { Providers } from "@/components/Providers";
 
-const inter = Inter({
+const sourceSans = Source_Sans_3({
   subsets: ["latin"],
   display: "swap",
+  variable: "--font-sans",
+});
+
+const amiri = Amiri({
+  subsets: ["latin"],
+  weight: ["400", "700"],
+  display: "swap",
+  variable: "--font-display",
 });
 
 export const metadata: Metadata = {
@@ -27,13 +36,15 @@ export default function RootLayout({
       </head>
       <body
         className={[
-          inter.className,
+          sourceSans.variable,
+          amiri.variable,
+          "font-sans",
           "bg-background-light dark:bg-background-dark",
           "text-slate-900 dark:text-slate-100",
           "min-h-screen",
         ].join(" ")}
       >
-        {children}
+        <Providers>{children}</Providers>
       </body>
     </html>
   );

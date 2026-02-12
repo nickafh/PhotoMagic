@@ -1,0 +1,65 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+enum Role {
+  ADVISOR
+  LISTINGS
+  ADMIN
+}
+
+enum ListingStatus {
+  DRAFT
+  SUBMITTED
+  APPROVED
+}
+
+model User {
+  id        String    @id @default(cuid())
+  email     String    @unique
+  name      String?
+  oktaId    String?   @unique
+  role      Role      @default(ADVISOR)
+  listings  Listing[]
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+}
+
+model Listing {
+  id               String        @id @default(cuid())
+  address          String
+  sanitizedAddress String
+  title            String        @default("Collection")
+  status           ListingStatus @default(DRAFT)
+  userId           String
+  user             User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  photos           Photo[]
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
+
+  @@index([userId])
+  @@index([status])
+}
+
+model Photo {
+  id           String   @id @default(cuid())
+  listingId    String
+  listing      Listing  @relation(fields: [listingId], references: [id], onDelete: Cascade)
+  originalName String
+  filename     String
+  mime         String
+  ext          String
+  sortOrder    Int      @default(0)
+  excluded     Boolean  @default(false)
+  createdAt    DateTime @default(now())
+
+  @@index([listingId])
+}

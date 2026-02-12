@@ -16,8 +16,8 @@ module.exports = {
         "text-grey": "#666666",
       },
       fontFamily: {
-        display: ["Inter", "sans-serif"],
-        sans: ["Inter", "sans-serif"],
+        display: ["var(--font-display)", "Amiri", "serif"],
+        sans: ["var(--font-sans)", "Source Sans 3", "sans-serif"],
       },
       borderRadius: {
         DEFAULT: "0.5rem",

@@ -11,8 +11,6 @@ body {
 }
 
 body {
-  font-family: Inter, ui-sans-serif, system-ui, -apple-system,
-    BlinkMacSystemFont, "Segoe UI", sans-serif;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
 }
@@ -29,8 +27,18 @@ body {
   vertical-align: middle;
 }
 
+/* Filled variant for active states */
+.material-symbols-filled {
+  font-variation-settings:
+    "FILL" 1,
+    "wght" 400,
+    "GRAD" 0,
+    "opsz" 24;
+  vertical-align: middle;
+}
+
 /* ------------------------------
-   Scrollbars (Sequencer style)
+   Scrollbars (Refined)
 -------------------------------- */
 .custom-scrollbar::-webkit-scrollbar {
   width: 6px;
@@ -41,13 +49,194 @@ body {
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb {
-  background: rgba(153, 153, 153, 0.35);
+  background: rgba(153, 153, 153, 0.25);
   border-radius: 999px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(153, 153, 153, 0.4);
 }
 
 .custom-scrollbar {
   scrollbar-width: thin;
-  scrollbar-color: rgba(153, 153, 153, 0.35) transparent;
+  scrollbar-color: rgba(153, 153, 153, 0.25) transparent;
+}
+
+/* ------------------------------
+   Texture Overlays
+-------------------------------- */
+.texture-grain {
+  position: relative;
+}
+
+.texture-grain::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+  opacity: 0.03;
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* ------------------------------
+   Animation Keyframes
+-------------------------------- */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes slideInLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+@keyframes pulse-gold {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(194, 155, 64, 0.4); }
+  50% { box-shadow: 0 0 0 8px rgba(194, 155, 64, 0); }
+}
+
+/* ------------------------------
+   Animation Utilities
+-------------------------------- */
+.animate-fade-in-up {
+  animation: fadeInUp 0.5s ease-out forwards;
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.4s ease-out forwards;
+}
+
+.animate-scale-in {
+  animation: scaleIn 0.3s ease-out forwards;
+}
+
+.animate-slide-in-left {
+  animation: slideInLeft 0.4s ease-out forwards;
+}
+
+/* Stagger children animations */
+.stagger-children > * {
+  opacity: 0;
+  animation: fadeInUp 0.4s ease-out forwards;
+}
+
+.stagger-children > *:nth-child(1) { animation-delay: 0ms; }
+.stagger-children > *:nth-child(2) { animation-delay: 30ms; }
+.stagger-children > *:nth-child(3) { animation-delay: 60ms; }
+.stagger-children > *:nth-child(4) { animation-delay: 90ms; }
+.stagger-children > *:nth-child(5) { animation-delay: 120ms; }
+.stagger-children > *:nth-child(6) { animation-delay: 150ms; }
+.stagger-children > *:nth-child(7) { animation-delay: 180ms; }
+.stagger-children > *:nth-child(8) { animation-delay: 210ms; }
+.stagger-children > *:nth-child(9) { animation-delay: 240ms; }
+.stagger-children > *:nth-child(10) { animation-delay: 270ms; }
+.stagger-children > *:nth-child(11) { animation-delay: 300ms; }
+.stagger-children > *:nth-child(12) { animation-delay: 330ms; }
+
+/* ------------------------------
+   Photo Grid Enhancements
+-------------------------------- */
+.photo-tile {
+  @apply relative aspect-square rounded-lg overflow-hidden;
+  @apply bg-slate-200 dark:bg-slate-800;
+  @apply transition-all duration-300 ease-out;
+}
+
+.photo-tile:hover {
+  @apply shadow-xl;
+  transform: translateY(-2px);
+}
+
+.photo-tile img {
+  @apply absolute inset-0 w-full h-full object-cover;
+  @apply transition-transform duration-500 ease-out;
+}
+
+.photo-tile:hover img {
+  transform: scale(1.03);
+}
+
+/* Gold number badge */
+.photo-badge {
+  @apply absolute flex items-center justify-center;
+  @apply bg-gradient-to-br from-gold via-[#D4AF61] to-[#A88832];
+  @apply rounded-full border-2 border-white/80;
+  @apply shadow-lg;
+  @apply font-bold text-white;
+  @apply transition-transform duration-200;
+}
+
+.photo-tile:hover .photo-badge {
+  transform: scale(1.1);
+}
+
+/* ------------------------------
+   Button Styles
+-------------------------------- */
+.btn-gold {
+  @apply bg-gradient-to-r from-gold via-[#D4AF61] to-gold;
+  @apply text-white font-bold;
+  @apply shadow-lg shadow-gold/25;
+  @apply transition-all duration-200;
+  background-size: 200% 100%;
+  background-position: 0% 0%;
+}
+
+.btn-gold:hover:not(:disabled) {
+  @apply shadow-xl shadow-gold/30;
+  background-position: 100% 0%;
+  transform: translateY(-1px);
+}
+
+.btn-gold:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.btn-gold:disabled {
+  @apply bg-gray-300 shadow-none cursor-not-allowed;
+  background-image: none;
+}
+
+/* ------------------------------
+   Status Badge Pulse
+-------------------------------- */
+.status-submitted .status-dot {
+  animation: pulse-gold 2s ease-in-out infinite;
 }
 
 /* ------------------------------
@@ -58,7 +247,31 @@ body {
     user-select: none;
   }
 
-  button {
-    @apply transition-colors duration-150;
+  button,
+  [role="button"] {
+    @apply transition-all duration-200;
+  }
+
+  /* Smooth focus states (Context7 / accessibility) */
+  :focus-visible {
+    @apply outline-none ring-2 ring-amber-500 ring-offset-2 ring-offset-white dark:ring-offset-background-dark;
+  }
+
+  /* Form inputs: blend border and shadow (Context7) */
+  input:focus-visible,
+  textarea:focus-visible,
+  select:focus-visible {
+    @apply outline-none border-amber-500 ring-1 ring-amber-500;
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  /* Safe area padding for notched phones */
+  .pb-safe {
+    padding-bottom: max(8px, env(safe-area-inset-bottom));
   }
 }
