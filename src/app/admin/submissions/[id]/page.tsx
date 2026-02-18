@@ -18,6 +18,12 @@ export default function ReviewSubmissionPage() {
   const [loading, setLoading] = useState(true);
   const [isApproving, setIsApproving] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
+  const [isProposing, setIsProposing] = useState(false);
+  const [isRequestingChanges, setIsRequestingChanges] = useState(false);
+  const [showProposeModal, setShowProposeModal] = useState(false);
+  const [showChangesModal, setShowChangesModal] = useState(false);
+  const [proposalNote, setProposalNote] = useState("");
+  const [changesNote, setChangesNote] = useState("");
 
   const fetchListing = useCallback(async () => {
     try {
@@ -115,6 +121,72 @@ export default function ReviewSubmissionPage() {
     }
   }
 
+  async function handlePropose() {
+    if (!listing) return;
+    setIsProposing(true);
+    try {
+      // Send the current photo order (non-excluded first, then excluded) as the proposal
+      const orderedPhotoIds = [
+        ...listing.photoIds.filter((pid) => !listing.photos[pid]?.excluded),
+        ...listing.photoIds.filter((pid) => listing.photos[pid]?.excluded),
+      ];
+
+      const res = await fetch(`/api/listings/${id}/propose`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          orderedPhotoIds,
+          note: proposalNote || undefined,
+        }),
+      });
+
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.error || "Failed to propose");
+      }
+
+      await fetchListing();
+      setShowProposeModal(false);
+      setProposalNote("");
+      toast.success("Proposal sent to the advisor.");
+    } catch (error) {
+      console.error("Propose error:", error);
+      toast.error("Failed to send proposal");
+    } finally {
+      setIsProposing(false);
+    }
+  }
+
+  async function handleRequestChanges() {
+    if (!submission) return;
+    setIsRequestingChanges(true);
+    try {
+      const res = await fetch(`/api/listings/${id}/request-changes`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          submissionId: submission.id,
+          note: changesNote || undefined,
+        }),
+      });
+
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.error || "Failed to request changes");
+      }
+
+      await fetchListing();
+      setShowChangesModal(false);
+      setChangesNote("");
+      toast.success("Changes requested from the advisor.");
+    } catch (error) {
+      console.error("Request changes error:", error);
+      toast.error("Failed to request changes");
+    } finally {
+      setIsRequestingChanges(false);
+    }
+  }
+
   if (loading || !listing) {
     return (
       <ListingShell title="Submission">
@@ -187,23 +259,42 @@ export default function ReviewSubmissionPage() {
               </button>
 
               {listing.status === "SUBMITTED" && (
-                <button
-                  onClick={handleApprove}
-                  disabled={isApproving}
-                  className="flex items-center gap-2 px-6 py-2.5 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors font-medium disabled:opacity-50"
-                >
-                  {isApproving ? (
-                    <>
-                      <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                      Approving...
-                    </>
-                  ) : (
-                    <>
-                      <span className="material-symbols-outlined">check_circle</span>
-                      Approve
-                    </>
-                  )}
-                </button>
+                <>
+                  <button
+                    onClick={() => setShowChangesModal(true)}
+                    disabled={!submission || submission.status !== "SUBMITTED"}
+                    className="flex items-center gap-2 px-4 py-2.5 border border-amber-300 dark:border-amber-600 text-amber-700 dark:text-amber-300 rounded-lg hover:bg-amber-50 dark:hover:bg-amber-900/20 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    <span className="material-symbols-outlined">edit_note</span>
+                    Request Changes
+                  </button>
+
+                  <button
+                    onClick={() => setShowProposeModal(true)}
+                    className="flex items-center gap-2 px-4 py-2.5 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors font-medium disabled:opacity-50"
+                  >
+                    <span className="material-symbols-outlined">send</span>
+                    Propose to Advisor
+                  </button>
+
+                  <button
+                    onClick={handleApprove}
+                    disabled={isApproving}
+                    className="flex items-center gap-2 px-6 py-2.5 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors font-medium disabled:opacity-50"
+                  >
+                    {isApproving ? (
+                      <>
+                        <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                        Approving...
+                      </>
+                    ) : (
+                      <>
+                        <span className="material-symbols-outlined">check_circle</span>
+                        Approve
+                      </>
+                    )}
+                  </button>
+                </>
               )}
             </div>
           </div>
