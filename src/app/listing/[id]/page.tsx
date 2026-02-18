@@ -63,8 +63,9 @@ export default function ListingPage() {
 
     let completed = 0;
     let hadError = false;
+    const MAX_CONCURRENT = 4;
 
-    for (const file of fileArray) {
+    async function uploadOne(file: File) {
       const form = new FormData();
       form.append("files", file);
 
@@ -81,6 +82,23 @@ export default function ListingPage() {
         toast.error(`Upload failed for ${file.name} (${res.status})`);
       }
     }
+
+    // Process files in a concurrency-limited pool
+    const pending = [...fileArray];
+    const executing: Promise<void>[] = [];
+
+    while (pending.length > 0) {
+      const file = pending.shift()!;
+      const p = uploadOne(file).then(() => {
+        executing.splice(executing.indexOf(p), 1);
+      });
+      executing.push(p);
+
+      if (executing.length >= MAX_CONCURRENT) {
+        await Promise.race(executing);
+      }
+    }
+    await Promise.all(executing);
 
     setUploadProgress(null);
 

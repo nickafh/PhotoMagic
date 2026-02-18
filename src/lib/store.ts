@@ -167,7 +167,7 @@ export async function addPhotoToListing(args: {
   buffer: Buffer;
   originalName: string;
   mime: string;
-}): Promise<{ listing: LegacyListing; photo: PhotoMeta }> {
+}): Promise<{ photo: PhotoMeta }> {
   const listing = await prisma.listing.findUnique({
     where: { id: args.listingId },
     include: { photos: true },
@@ -206,31 +206,18 @@ export async function addPhotoToListing(args: {
     data: { filename: storedName },
   });
 
-  // Upload original to Azure Blob
-  await uploadOriginal(args.listingId, photo.id, ext, args.buffer);
+  // Upload original and generate+upload thumbnail in parallel
+  const thumbPromise = sharp(args.buffer)
+    .resize(THUMB_SIZE, THUMB_SIZE, { fit: "cover", position: "center" })
+    .jpeg({ quality: 80 })
+    .toBuffer()
+    .then((thumbBuffer) => uploadThumbnail(args.listingId, photo.id, thumbBuffer))
+    .catch((err) => console.error("Failed to generate thumbnail:", err));
 
-  // Generate and upload thumbnail
-  try {
-    const thumbBuffer = await sharp(args.buffer)
-      .resize(THUMB_SIZE, THUMB_SIZE, { fit: "cover", position: "center" })
-      .jpeg({ quality: 80 })
-      .toBuffer();
-    await uploadThumbnail(args.listingId, photo.id, thumbBuffer);
-  } catch (err) {
-    console.error("Failed to generate thumbnail:", err);
-  }
-
-  // Fetch updated listing
-  const updatedListing = await prisma.listing.findUnique({
-    where: { id: args.listingId },
-    include: {
-      photos: {
-        orderBy: { sortOrder: "asc" },
-      },
-    },
-  });
-
-  if (!updatedListing) throw new Error("Listing not found after update");
+  await Promise.all([
+    uploadOriginal(args.listingId, photo.id, ext, args.buffer),
+    thumbPromise,
+  ]);
 
   const photoMeta: PhotoMeta = {
     id: photo.id,
@@ -244,7 +231,7 @@ export async function addPhotoToListing(args: {
     createdAt: photo.createdAt,
   };
 
-  return { listing: toLegacyListing(updatedListing), photo: photoMeta };
+  return { photo: photoMeta };
 }
 
 export async function getPhotoFile(listingId: string, photoId: string, thumbnail = false) {
