@@ -3,7 +3,7 @@
 import { useEffect, useState, useCallback, useRef, useMemo, startTransition } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
-import type { LegacyListing } from "@/lib/types";
+import type { LegacyListing, PhotoOrderSubmissionData } from "@/lib/types";
 import PhotoGrid from "@/components/PhotoGrid";
 import ExcludedPhotosSection from "@/components/ExcludedPhotosSection";
 import ListingShell from "@/components/ListingsShell";
@@ -19,10 +19,13 @@ export default function ListingPage() {
   const id = params.id as string;
 
   const [listing, setListing] = useState<LegacyListing | null>(null);
+  const [submission, setSubmission] = useState<PhotoOrderSubmissionData | null>(null);
   const [showSubmitModal, setShowSubmitModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [isApprovingProposal, setIsApprovingProposal] = useState(false);
+  const [isRequestingChanges, setIsRequestingChanges] = useState(false);
   const [uploadProgress, setUploadProgress] = useState<{ current: number; total: number } | null>(
     null
   );
@@ -37,16 +40,24 @@ export default function ListingPage() {
   }, [authStatus, router]);
 
   const refresh = useCallback(async () => {
-    const res = await fetch(`/api/listings/${id}`, { cache: "no-store" });
-    if (!res.ok) {
-      if (res.status === 401) {
+    const [listingRes, submissionRes] = await Promise.all([
+      fetch(`/api/listings/${id}`, { cache: "no-store" }),
+      fetch(`/api/listings/${id}/submission`, { cache: "no-store" }),
+    ]);
+    if (!listingRes.ok) {
+      if (listingRes.status === 401) {
         router.push("/auth/signin");
         return;
       }
-      throw new Error(`Failed to load listing: ${res.status}`);
+      throw new Error(`Failed to load listing: ${listingRes.status}`);
     }
-    const data = (await res.json()) as LegacyListing;
+    const data = (await listingRes.json()) as LegacyListing;
     setListing(data);
+
+    if (submissionRes.ok) {
+      const subData = await submissionRes.json();
+      setSubmission(subData);
+    }
   }, [id, router]);
 
   useEffect(() => {
@@ -199,6 +210,50 @@ export default function ListingPage() {
       console.error("Delete error:", error);
       toast.error("Failed to delete listing. Please try again.");
       setIsDeleting(false);
+    }
+  }
+
+  async function handleApproveProposal() {
+    if (!submission) return;
+    setIsApprovingProposal(true);
+    try {
+      const res = await fetch(`/api/listings/${id}/approve`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ submissionId: submission.id }),
+      });
+
+      if (!res.ok) throw new Error("Failed to approve proposal");
+
+      await refresh();
+      toast.success("Proposal approved.");
+    } catch (error) {
+      console.error("Approve proposal error:", error);
+      toast.error("Failed to approve proposal.");
+    } finally {
+      setIsApprovingProposal(false);
+    }
+  }
+
+  async function handleRequestChanges() {
+    if (!submission) return;
+    setIsRequestingChanges(true);
+    try {
+      const res = await fetch(`/api/listings/${id}/request-changes`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ submissionId: submission.id }),
+      });
+
+      if (!res.ok) throw new Error("Failed to request changes");
+
+      await refresh();
+      toast.success("Changes requested.");
+    } catch (error) {
+      console.error("Request changes error:", error);
+      toast.error("Failed to request changes.");
+    } finally {
+      setIsRequestingChanges(false);
     }
   }
 
@@ -367,6 +422,48 @@ export default function ListingPage() {
                 width: `${(uploadProgress.current / uploadProgress.total) * 100}%`,
               }}
             />
+          </div>
+        </div>
+      )}
+
+      {/* Proposal notification banner */}
+      {submission &&
+        submission.status === "SUBMITTED" &&
+        submission.approverRole === "ADVISOR" &&
+        session?.user?.role === "ADVISOR" && (
+        <div className="mb-4 rounded-xl bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800 p-4 animate-fade-in">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+            <div className="flex items-start gap-3">
+              <span className="material-symbols-outlined text-purple-600 dark:text-purple-400 mt-0.5">
+                rate_review
+              </span>
+              <div>
+                <p className="font-semibold text-purple-900 dark:text-purple-200">
+                  The Listings Team has proposed a new photo order
+                </p>
+                {submission.note && (
+                  <p className="text-sm text-purple-700 dark:text-purple-300 mt-1">
+                    Note: {submission.note}
+                  </p>
+                )}
+              </div>
+            </div>
+            <div className="flex items-center gap-2 shrink-0">
+              <button
+                onClick={handleRequestChanges}
+                disabled={isRequestingChanges}
+                className="px-4 py-2 text-sm font-medium text-amber-700 dark:text-amber-300 border border-amber-300 dark:border-amber-700 rounded-lg hover:bg-amber-50 dark:hover:bg-amber-900/20 transition-colors disabled:opacity-50"
+              >
+                {isRequestingChanges ? "Requesting..." : "Request Changes"}
+              </button>
+              <button
+                onClick={handleApproveProposal}
+                disabled={isApprovingProposal}
+                className="px-4 py-2 text-sm font-medium text-white bg-green-600 hover:bg-green-700 rounded-lg transition-colors disabled:opacity-50"
+              >
+                {isApprovingProposal ? "Approving..." : "Approve Proposal"}
+              </button>
+            </div>
           </div>
         </div>
       )}

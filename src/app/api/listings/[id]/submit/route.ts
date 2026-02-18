@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { getAuthenticatedUser } from "@/lib/auth-helpers";
-import { getListingWithUser, updateListing } from "@/lib/store";
+import { getListingWithUser, updateListing, createSubmission } from "@/lib/store";
 import { canModifyListing } from "@/lib/permissions";
 import { sendEmail, buildSubmissionEmail } from "@/lib/email";
 
@@ -54,6 +54,24 @@ export async function POST(_req: Request, ctx: Ctx) {
 
   // Update status to SUBMITTED
   const updated = await updateListing(id, { status: "SUBMITTED" });
+
+  // Create a PhotoOrderSubmission snapshot
+  const sortedPhotos = [...listingWithUser.photos].sort((a, b) => a.sortOrder - b.sortOrder);
+  const includedIds = sortedPhotos.filter((p) => !p.excluded).map((p) => p.id);
+  const excludedIds = sortedPhotos.filter((p) => p.excluded).map((p) => p.id);
+  const orderedPhotoIds = [...includedIds, ...excludedIds];
+
+  try {
+    await createSubmission({
+      listingId: id,
+      initiatorRole: "ADVISOR",
+      approverRole: "LISTINGS",
+      orderedPhotoIds,
+      submittedByUserId: user.id,
+    });
+  } catch (err) {
+    console.error("Failed to create submission snapshot:", err);
+  }
 
   // Send notification email
   const listingsTeamEmail = process.env.LISTINGS_TEAM_EMAIL;

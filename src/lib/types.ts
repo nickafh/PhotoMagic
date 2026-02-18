@@ -1,6 +1,7 @@
 // Role and ListingStatus enums - duplicated from Prisma to avoid Edge runtime issues
 export type Role = "ADVISOR" | "LISTINGS" | "ADMIN";
 export type ListingStatus = "DRAFT" | "SUBMITTED" | "APPROVED";
+export type SubmissionStatus = "DRAFT" | "SUBMITTED" | "CHANGES_REQUESTED" | "APPROVED";
 
 // Re-export Prisma types for server-side use (avoid in middleware/edge)
 export type { User, Listing, Photo } from "@/generated/prisma/client";
@@ -32,6 +33,23 @@ export type PhotoMeta = {
   sortOrder: number;
   excluded: boolean;
   createdAt: Date;
+};
+
+// PhotoOrderSubmission data returned from store functions
+export type PhotoOrderSubmissionData = {
+  id: string;
+  listingId: string;
+  initiatorRole: Role;
+  approverRole: Role;
+  status: SubmissionStatus;
+  orderedPhotoIds: string[];
+  note: string | null;
+  submittedByUserId: string;
+  approvedByUserId: string | null;
+  createdAt: Date;
+  updatedAt: Date;
+  submittedAt: Date;
+  approvedAt: Date | null;
 };
 
 // Legacy Listing type for API responses (flattened)

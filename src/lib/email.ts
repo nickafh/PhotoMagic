@@ -213,6 +213,139 @@ export function buildApprovalEmail(data: {
   return { subject, body };
 }
 
+export function buildProposalEmail(data: {
+  address: string;
+  proposerName: string;
+  proposerEmail: string;
+  photoCount: number;
+  listingId: string;
+  baseUrl: string;
+}) {
+  const viewUrl = `${data.baseUrl}/listing/${data.listingId}`;
+
+  const subject = `Photo Order Proposal: ${data.address}`;
+
+  const body = `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #333; }
+        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+        .header { background-color: #7c3aed; color: white; padding: 20px; border-radius: 8px 8px 0 0; }
+        .content { background-color: #f9fafb; padding: 20px; border: 1px solid #e5e7eb; border-top: none; border-radius: 0 0 8px 8px; }
+        .details { margin: 20px 0; }
+        .detail-row { display: flex; padding: 8px 0; border-bottom: 1px solid #e5e7eb; }
+        .detail-label { font-weight: 600; width: 120px; color: #6b7280; }
+        .detail-value { color: #111827; }
+        .button { display: inline-block; background-color: #7c3aed; color: white !important; text-decoration: none; padding: 12px 24px; border-radius: 6px; font-weight: 600; margin-top: 20px; }
+      </style>
+    </head>
+    <body>
+      <div class="container">
+        <div class="header">
+          <h1 style="margin: 0; font-size: 24px;">Photo Order Proposal</h1>
+        </div>
+        <div class="content">
+          <p>The listings team has proposed a new photo order for your listing. Please review and approve or request changes.</p>
+
+          <div class="details">
+            <div class="detail-row">
+              <span class="detail-label">Property:</span>
+              <span class="detail-value">${data.address}</span>
+            </div>
+            <div class="detail-row">
+              <span class="detail-label">Proposed by:</span>
+              <span class="detail-value">${data.proposerName} (${data.proposerEmail})</span>
+            </div>
+            <div class="detail-row">
+              <span class="detail-label">Photos:</span>
+              <span class="detail-value">${data.photoCount} photos</span>
+            </div>
+          </div>
+
+          <a href="${viewUrl}" class="button">Review Proposal</a>
+
+          <p style="margin-top: 30px; font-size: 14px; color: #6b7280;">
+            This email was sent from PhotoMagic. Please do not reply directly to this email.
+          </p>
+        </div>
+      </div>
+    </body>
+    </html>
+  `;
+
+  return { subject, body };
+}
+
+export function buildChangesRequestedEmail(data: {
+  address: string;
+  reviewerName: string;
+  note?: string;
+  listingId: string;
+  baseUrl: string;
+}) {
+  const viewUrl = `${data.baseUrl}/listing/${data.listingId}`;
+
+  const subject = `Changes Requested: ${data.address}`;
+
+  const noteSection = data.note
+    ? `
+          <div class="detail-row">
+            <span class="detail-label">Note:</span>
+            <span class="detail-value">${data.note}</span>
+          </div>`
+    : "";
+
+  const body = `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #333; }
+        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+        .header { background-color: #d97706; color: white; padding: 20px; border-radius: 8px 8px 0 0; }
+        .content { background-color: #f9fafb; padding: 20px; border: 1px solid #e5e7eb; border-top: none; border-radius: 0 0 8px 8px; }
+        .details { margin: 20px 0; }
+        .detail-row { display: flex; padding: 8px 0; border-bottom: 1px solid #e5e7eb; }
+        .detail-label { font-weight: 600; width: 120px; color: #6b7280; }
+        .detail-value { color: #111827; }
+        .button { display: inline-block; background-color: #d97706; color: white !important; text-decoration: none; padding: 12px 24px; border-radius: 6px; font-weight: 600; margin-top: 20px; }
+      </style>
+    </head>
+    <body>
+      <div class="container">
+        <div class="header">
+          <h1 style="margin: 0; font-size: 24px;">Changes Requested</h1>
+        </div>
+        <div class="content">
+          <p>Changes have been requested on the photo order submission.</p>
+
+          <div class="details">
+            <div class="detail-row">
+              <span class="detail-label">Property:</span>
+              <span class="detail-value">${data.address}</span>
+            </div>
+            <div class="detail-row">
+              <span class="detail-label">Reviewed by:</span>
+              <span class="detail-value">${data.reviewerName}</span>
+            </div>${noteSection}
+          </div>
+
+          <a href="${viewUrl}" class="button">View Listing</a>
+
+          <p style="margin-top: 30px; font-size: 14px; color: #6b7280;">
+            This email was sent from PhotoMagic. Please do not reply directly to this email.
+          </p>
+        </div>
+      </div>
+    </body>
+    </html>
+  `;
+
+  return { subject, body };
+}
+
 export function buildSubmissionEmail(data: {
   listingAddress: string;
   listingId: string;

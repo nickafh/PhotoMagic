@@ -6,7 +6,7 @@ import Link from "next/link";
 import { toast } from "sonner";
 import ListingShell from "@/components/ListingsShell";
 import StatusBadge from "@/components/StatusBadge";
-import type { LegacyListing } from "@/lib/types";
+import type { LegacyListing, PhotoOrderSubmissionData } from "@/lib/types";
 
 export default function ReviewSubmissionPage() {
   const params = useParams();
@@ -14,18 +14,27 @@ export default function ReviewSubmissionPage() {
   const id = params.id as string;
 
   const [listing, setListing] = useState<LegacyListing | null>(null);
+  const [submission, setSubmission] = useState<PhotoOrderSubmissionData | null>(null);
   const [loading, setLoading] = useState(true);
   const [isApproving, setIsApproving] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
 
   const fetchListing = useCallback(async () => {
     try {
-      const res = await fetch(`/api/listings/${id}`);
-      if (res.ok) {
-        const data = await res.json();
+      const [listingRes, submissionRes] = await Promise.all([
+        fetch(`/api/listings/${id}`),
+        fetch(`/api/listings/${id}/submission`),
+      ]);
+      if (listingRes.ok) {
+        const data = await listingRes.json();
         setListing(data);
-      } else if (res.status === 404) {
+      } else if (listingRes.status === 404) {
         router.push("/admin/submissions");
+        return;
+      }
+      if (submissionRes.ok) {
+        const subData = await submissionRes.json();
+        setSubmission(subData);
       }
     } catch (error) {
       console.error("Failed to fetch listing:", error);
@@ -43,6 +52,21 @@ export default function ReviewSubmissionPage() {
   async function handleApprove() {
     setIsApproving(true);
     try {
+      if (submission && submission.status === "SUBMITTED") {
+        // Approve via submission endpoint
+        const res = await fetch(`/api/listings/${id}/approve`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ submissionId: submission.id }),
+        });
+
+        if (!res.ok) {
+          toast.error("Failed to approve submission");
+          return;
+        }
+      }
+
+      // Also update listing status to APPROVED
       const res = await fetch(`/api/listings/${id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
@@ -66,7 +90,10 @@ export default function ReviewSubmissionPage() {
   async function handleDownload() {
     setIsDownloading(true);
     try {
-      const res = await fetch(`/api/listings/${id}/downloads`);
+      const downloadUrl = submission?.id
+        ? `/api/listings/${id}/downloads?submissionId=${submission.id}`
+        : `/api/listings/${id}/downloads`;
+      const res = await fetch(downloadUrl);
       if (!res.ok) {
         throw new Error("Download failed");
       }
@@ -123,6 +150,16 @@ export default function ReviewSubmissionPage() {
                     {listing.address}
                   </h1>
                   <StatusBadge status={listing.status} size="md" />
+                  {submission && (
+                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                      submission.status === "APPROVED" ? "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400" :
+                      submission.status === "SUBMITTED" ? "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400" :
+                      submission.status === "CHANGES_REQUESTED" ? "bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400" :
+                      "bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300"
+                    }`}>
+                      {submission.status === "CHANGES_REQUESTED" ? "Changes Requested" : submission.status}
+                    </span>
+                  )}
                 </div>
                 <p className="text-gray-500 dark:text-gray-400 mt-1">
                   {activePhotos.length} photo{activePhotos.length !== 1 ? "s" : ""} selected

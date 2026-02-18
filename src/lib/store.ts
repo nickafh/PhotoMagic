@@ -1,6 +1,6 @@
 import sharp from "sharp";
 import prisma from "@/lib/db";
-import type { ListingWithPhotos, LegacyListing, PhotoMeta } from "@/lib/types";
+import type { ListingWithPhotos, LegacyListing, PhotoMeta, PhotoOrderSubmissionData, Role, SubmissionStatus } from "@/lib/types";
 import { sanitizeAddress } from "@/lib/sanitize";
 import {
   blobPathOriginal,
@@ -494,6 +494,109 @@ export async function getListingsTeamMembers() {
       role: true,
     },
   });
+}
+
+// --- PhotoOrderSubmission store functions ---
+
+function toSubmissionData(record: {
+  id: string;
+  listingId: string;
+  initiatorRole: string;
+  approverRole: string;
+  status: string;
+  orderedPhotoIds: string;
+  note: string | null;
+  submittedByUserId: string;
+  approvedByUserId: string | null;
+  createdAt: Date;
+  updatedAt: Date;
+  submittedAt: Date;
+  approvedAt: Date | null;
+}): PhotoOrderSubmissionData {
+  return {
+    ...record,
+    initiatorRole: record.initiatorRole as Role,
+    approverRole: record.approverRole as Role,
+    status: record.status as SubmissionStatus,
+    orderedPhotoIds: JSON.parse(record.orderedPhotoIds) as string[],
+  };
+}
+
+export async function createSubmission(input: {
+  listingId: string;
+  initiatorRole: Role;
+  approverRole: Role;
+  orderedPhotoIds: string[];
+  submittedByUserId: string;
+  note?: string;
+}): Promise<PhotoOrderSubmissionData> {
+  const record = await prisma.photoOrderSubmission.create({
+    data: {
+      listingId: input.listingId,
+      initiatorRole: input.initiatorRole,
+      approverRole: input.approverRole,
+      status: "SUBMITTED",
+      orderedPhotoIds: JSON.stringify(input.orderedPhotoIds),
+      submittedByUserId: input.submittedByUserId,
+      note: input.note,
+    },
+  });
+  return toSubmissionData(record);
+}
+
+export async function getSubmissionById(id: string): Promise<PhotoOrderSubmissionData | null> {
+  const record = await prisma.photoOrderSubmission.findUnique({ where: { id } });
+  if (!record) return null;
+  return toSubmissionData(record);
+}
+
+export async function getLatestSubmissionForListing(
+  listingId: string,
+  filters?: { status?: SubmissionStatus | SubmissionStatus[] }
+): Promise<PhotoOrderSubmissionData | null> {
+  const where: { listingId: string; status?: SubmissionStatus | { in: SubmissionStatus[] } } = { listingId };
+  if (filters?.status) {
+    if (Array.isArray(filters.status)) {
+      where.status = { in: filters.status };
+    } else {
+      where.status = filters.status;
+    }
+  }
+
+  const record = await prisma.photoOrderSubmission.findFirst({
+    where,
+    orderBy: { createdAt: "desc" },
+  });
+  if (!record) return null;
+  return toSubmissionData(record);
+}
+
+export async function approveSubmission(
+  id: string,
+  approvedByUserId: string
+): Promise<PhotoOrderSubmissionData> {
+  const record = await prisma.photoOrderSubmission.update({
+    where: { id },
+    data: {
+      status: "APPROVED",
+      approvedByUserId,
+      approvedAt: new Date(),
+    },
+  });
+  return toSubmissionData(record);
+}
+
+export async function requestChangesOnSubmission(
+  id: string,
+  note?: string
+): Promise<PhotoOrderSubmissionData> {
+  const data: { status: "CHANGES_REQUESTED"; note?: string } = { status: "CHANGES_REQUESTED" };
+  if (note !== undefined) data.note = note;
+  const record = await prisma.photoOrderSubmission.update({
+    where: { id },
+    data,
+  });
+  return toSubmissionData(record);
 }
 
 function guessExt(name: string, mime: string) {
