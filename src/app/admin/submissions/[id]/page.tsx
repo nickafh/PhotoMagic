@@ -349,6 +349,116 @@ export default function ReviewSubmissionPage() {
             )}
           </div>
         </div>
+
+        {/* Propose to Advisor Modal */}
+        {showProposeModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <div
+              className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+              onClick={() => setShowProposeModal(false)}
+            />
+            <div className="relative bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-md">
+              <div className="p-6">
+                <div className="w-14 h-14 mx-auto mb-4 rounded-full bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center">
+                  <span className="material-symbols-outlined text-purple-600 dark:text-purple-400 text-3xl">
+                    send
+                  </span>
+                </div>
+                <h3 className="text-xl font-semibold text-center text-gray-900 dark:text-white mb-2">
+                  Propose Order to Advisor
+                </h3>
+                <p className="text-center text-gray-600 dark:text-gray-300 mb-4">
+                  This will send the current photo order as a proposal to the advisor for approval.
+                </p>
+                <textarea
+                  value={proposalNote}
+                  onChange={(e) => setProposalNote(e.target.value)}
+                  placeholder="Add a note (optional)"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 focus:ring-2 focus:ring-purple-500 focus:border-transparent resize-none"
+                  rows={3}
+                />
+              </div>
+              <div className="flex gap-3 p-4 border-t border-gray-200 dark:border-gray-700">
+                <button
+                  onClick={() => setShowProposeModal(false)}
+                  disabled={isProposing}
+                  className="flex-1 px-4 py-2.5 text-gray-700 dark:text-gray-300 font-semibold rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors disabled:opacity-50"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handlePropose}
+                  disabled={isProposing}
+                  className="flex-1 px-4 py-2.5 bg-purple-600 hover:bg-purple-700 text-white font-semibold rounded-lg transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+                >
+                  {isProposing ? (
+                    <>
+                      <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                      Sending...
+                    </>
+                  ) : (
+                    "Send Proposal"
+                  )}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Request Changes Modal */}
+        {showChangesModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <div
+              className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+              onClick={() => setShowChangesModal(false)}
+            />
+            <div className="relative bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-md">
+              <div className="p-6">
+                <div className="w-14 h-14 mx-auto mb-4 rounded-full bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center">
+                  <span className="material-symbols-outlined text-amber-600 dark:text-amber-400 text-3xl">
+                    edit_note
+                  </span>
+                </div>
+                <h3 className="text-xl font-semibold text-center text-gray-900 dark:text-white mb-2">
+                  Request Changes
+                </h3>
+                <p className="text-center text-gray-600 dark:text-gray-300 mb-4">
+                  Ask the advisor to make changes to their photo order.
+                </p>
+                <textarea
+                  value={changesNote}
+                  onChange={(e) => setChangesNote(e.target.value)}
+                  placeholder="What changes are needed? (optional)"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 focus:ring-2 focus:ring-amber-500 focus:border-transparent resize-none"
+                  rows={3}
+                />
+              </div>
+              <div className="flex gap-3 p-4 border-t border-gray-200 dark:border-gray-700">
+                <button
+                  onClick={() => setShowChangesModal(false)}
+                  disabled={isRequestingChanges}
+                  className="flex-1 px-4 py-2.5 text-gray-700 dark:text-gray-300 font-semibold rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors disabled:opacity-50"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleRequestChanges}
+                  disabled={isRequestingChanges}
+                  className="flex-1 px-4 py-2.5 bg-amber-600 hover:bg-amber-700 text-white font-semibold rounded-lg transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+                >
+                  {isRequestingChanges ? (
+                    <>
+                      <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                      Sending...
+                    </>
+                  ) : (
+                    "Request Changes"
+                  )}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
     </ListingShell>
   );
 }
