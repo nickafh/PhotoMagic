@@ -496,6 +496,19 @@ export async function getListingsTeamMembers() {
   });
 }
 
+// Get all users with ADVISOR role
+export async function getAdvisors() {
+  return prisma.user.findMany({
+    where: { role: "ADVISOR" },
+    select: {
+      id: true,
+      email: true,
+      name: true,
+      role: true,
+    },
+  });
+}
+
 // --- PhotoOrderSubmission store functions ---
 
 function toSubmissionData(record: {

@@ -31,7 +31,7 @@ export async function POST(req: Request, ctx: Ctx) {
   }
 
   const body = await req.json();
-  const { orderedPhotoIds, note } = body as { orderedPhotoIds: string[]; note?: string };
+  const { orderedPhotoIds, note, advisorId } = body as { orderedPhotoIds: string[]; note?: string; advisorId?: string };
 
   if (!Array.isArray(orderedPhotoIds) || orderedPhotoIds.length === 0) {
     return NextResponse.json({ error: "orderedPhotoIds must be a non-empty array" }, { status: 400 });
@@ -54,10 +54,20 @@ export async function POST(req: Request, ctx: Ctx) {
     note,
   });
 
-  // Send notification email to the listing owner (advisor)
+  // Send notification email to the selected advisor (or listing owner as fallback)
   try {
-    const owner = await getUserById(listingWithUser.userId);
-    if (owner?.email) {
+    let recipient = null;
+    if (advisorId) {
+      const advisor = await getUserById(advisorId);
+      if (advisor && advisor.role === "ADVISOR") {
+        recipient = advisor;
+      }
+    }
+    if (!recipient) {
+      recipient = await getUserById(listingWithUser.userId);
+    }
+
+    if (recipient?.email) {
       const baseUrl = process.env.NEXTAUTH_URL || "http://localhost:3000";
       const { subject, body: emailBody } = buildProposalEmail({
         address: listingWithUser.address,
@@ -68,7 +78,7 @@ export async function POST(req: Request, ctx: Ctx) {
         baseUrl,
       });
 
-      await sendEmail({ to: owner.email, subject, body: emailBody });
+      await sendEmail({ to: recipient.email, subject, body: emailBody });
     }
   } catch (err) {
     console.error("Failed to send proposal notification:", err);

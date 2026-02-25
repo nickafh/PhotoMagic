@@ -24,6 +24,8 @@ export default function ReviewSubmissionPage() {
   const [showChangesModal, setShowChangesModal] = useState(false);
   const [proposalNote, setProposalNote] = useState("");
   const [changesNote, setChangesNote] = useState("");
+  const [advisors, setAdvisors] = useState<{ id: string; email: string; name: string | null; role: string }[]>([]);
+  const [selectedAdvisorId, setSelectedAdvisorId] = useState<string>("");
 
   const fetchListing = useCallback(async () => {
     try {
@@ -54,6 +56,22 @@ export default function ReviewSubmissionPage() {
       fetchListing();
     }
   }, [id, fetchListing]);
+
+  // Fetch advisors for the propose modal
+  useEffect(() => {
+    async function fetchAdvisors() {
+      try {
+        const res = await fetch("/api/users/advisors");
+        if (res.ok) {
+          const data = await res.json();
+          setAdvisors(data);
+        }
+      } catch (err) {
+        console.error("Failed to fetch advisors:", err);
+      }
+    }
+    fetchAdvisors();
+  }, []);
 
   async function handleApprove() {
     setIsApproving(true);
@@ -122,7 +140,7 @@ export default function ReviewSubmissionPage() {
   }
 
   async function handlePropose() {
-    if (!listing) return;
+    if (!listing || !selectedAdvisorId) return;
     setIsProposing(true);
     try {
       // Send the current photo order (non-excluded first, then excluded) as the proposal
@@ -137,6 +155,7 @@ export default function ReviewSubmissionPage() {
         body: JSON.stringify({
           orderedPhotoIds,
           note: proposalNote || undefined,
+          advisorId: selectedAdvisorId,
         }),
       });
 
@@ -270,7 +289,12 @@ export default function ReviewSubmissionPage() {
                   </button>
 
                   <button
-                    onClick={() => setShowProposeModal(true)}
+                    onClick={() => {
+                      // Pre-select the listing owner if they're an advisor
+                      const ownerIsAdvisor = advisors.some((a) => a.id === listing?.userId);
+                      setSelectedAdvisorId(ownerIsAdvisor ? listing?.userId || "" : "");
+                      setShowProposeModal(true);
+                    }}
                     className="flex items-center gap-2 px-4 py-2.5 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors font-medium disabled:opacity-50"
                   >
                     <span className="material-symbols-outlined">send</span>
@@ -370,6 +394,21 @@ export default function ReviewSubmissionPage() {
                 <p className="text-center text-gray-600 dark:text-gray-300 mb-4">
                   This will send the current photo order as a proposal to the advisor for approval.
                 </p>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  Select Advisor
+                </label>
+                <select
+                  value={selectedAdvisorId}
+                  onChange={(e) => setSelectedAdvisorId(e.target.value)}
+                  className="w-full px-3 py-2 mb-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                >
+                  <option value="">Choose an advisor...</option>
+                  {advisors.map((a) => (
+                    <option key={a.id} value={a.id}>
+                      {a.name || a.email}{a.id === listing?.userId ? " (listing owner)" : ""}
+                    </option>
+                  ))}
+                </select>
                 <textarea
                   value={proposalNote}
                   onChange={(e) => setProposalNote(e.target.value)}
@@ -388,7 +427,7 @@ export default function ReviewSubmissionPage() {
                 </button>
                 <button
                   onClick={handlePropose}
-                  disabled={isProposing}
+                  disabled={isProposing || !selectedAdvisorId}
                   className="flex-1 px-4 py-2.5 bg-purple-600 hover:bg-purple-700 text-white font-semibold rounded-lg transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
                 >
                   {isProposing ? (

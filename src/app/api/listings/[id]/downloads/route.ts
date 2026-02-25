@@ -6,7 +6,6 @@ import { zipFilenameForListing } from "@/lib/zip";
 import { pad3, sanitizeAddress } from "@/lib/sanitize";
 import { downloadStream } from "@/lib/blob";
 import archiver from "archiver";
-import { PassThrough } from "stream";
 
 export const runtime = "nodejs";
 
@@ -99,11 +98,18 @@ export async function GET(req: Request, ctx: Ctx) {
     }
   }
 
-  // Create archive
+  // Create archive and collect into a buffer
   const archive = archiver("zip", { zlib: { level: 9 } });
-  const passThrough = new PassThrough();
+  const chunks: Buffer[] = [];
 
-  archive.pipe(passThrough);
+  archive.on("data", (chunk: Buffer) => {
+    chunks.push(chunk);
+  });
+
+  archive.on("error", (err) => {
+    console.error("Archive error:", err);
+    throw err;
+  });
 
   // Add included photos to root
   for (let i = 0; i < includedPhotos.length; i++) {
@@ -137,27 +143,20 @@ export async function GET(req: Request, ctx: Ctx) {
     }
   }
 
-  archive.finalize();
-
-  // Convert Node.js stream to Web ReadableStream
-  const readableStream = new ReadableStream({
-    start(controller) {
-      passThrough.on("data", (chunk) => {
-        controller.enqueue(chunk);
-      });
-      passThrough.on("end", () => {
-        controller.close();
-      });
-      passThrough.on("error", (err) => {
-        controller.error(err);
-      });
-    },
+  // Wait for archive to fully finalize into buffer
+  await archive.finalize();
+  await new Promise<void>((resolve, reject) => {
+    archive.on("end", resolve);
+    archive.on("error", reject);
   });
 
-  return new Response(readableStream, {
+  const buffer = Buffer.concat(chunks);
+
+  return new Response(buffer, {
     headers: {
       "Content-Type": "application/zip",
       "Content-Disposition": `attachment; filename="${filename}"`,
+      "Content-Length": String(buffer.byteLength),
     },
   });
 }
