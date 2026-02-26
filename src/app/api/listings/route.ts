@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { getAuthenticatedUser } from "@/lib/auth-helpers";
-import { createListing, getListingsByUserId, getAllListings, countListings, getListingsTeamMembers } from "@/lib/store";
+import { createListing, getListingsByUserId, getListingsProposedToUser, getAllListings, countListings, getListingsTeamMembers } from "@/lib/store";
 import { hasPermission } from "@/lib/permissions";
 import { sendEmail, buildNewListingEmail } from "@/lib/email";
 
@@ -42,9 +42,25 @@ export async function GET(req: Request) {
     return NextResponse.json({ listings, total });
   }
 
-  // Get user's own listings
-  const listings = await getListingsByUserId(user.id);
-  return NextResponse.json({ listings, total: listings.length });
+  // Get user's own listings + listings proposed to them
+  const [ownListings, proposedListings] = await Promise.all([
+    getListingsByUserId(user.id),
+    getListingsProposedToUser(user.id),
+  ]);
+
+  // Merge and deduplicate by listing ID
+  const seen = new Set(ownListings.map((l) => l.id));
+  const merged = [...ownListings];
+  for (const listing of proposedListings) {
+    if (!seen.has(listing.id)) {
+      merged.push(listing);
+    }
+  }
+
+  // Sort by updatedAt descending
+  merged.sort((a, b) => b.updatedAt - a.updatedAt);
+
+  return NextResponse.json({ listings: merged, total: merged.length });
 }
 
 // POST /api/listings - Create a new listing

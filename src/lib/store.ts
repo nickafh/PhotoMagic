@@ -615,6 +615,33 @@ export async function requestChangesOnSubmission(
   return toSubmissionData(record);
 }
 
+export async function getListingsProposedToUser(userId: string): Promise<LegacyListing[]> {
+  const submissions = await prisma.photoOrderSubmission.findMany({
+    where: { proposedToUserId: userId },
+    include: {
+      listing: {
+        include: {
+          photos: {
+            orderBy: { sortOrder: "asc" },
+          },
+        },
+      },
+    },
+    orderBy: { createdAt: "desc" },
+  });
+
+  // Deduplicate by listing ID (multiple submissions may reference the same listing)
+  const seen = new Set<string>();
+  const listings: LegacyListing[] = [];
+  for (const sub of submissions) {
+    if (!seen.has(sub.listingId)) {
+      seen.add(sub.listingId);
+      listings.push(toLegacyListing(sub.listing));
+    }
+  }
+  return listings;
+}
+
 export async function hasProposalForUser(listingId: string, userId: string): Promise<boolean> {
   const count = await prisma.photoOrderSubmission.count({
     where: {
