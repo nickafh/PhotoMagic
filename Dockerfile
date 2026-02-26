@@ -40,16 +40,13 @@ COPY --from=builder /app/public ./public
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 
-# Copy generated Prisma client, seed database, and migrations
+# Copy generated Prisma client and seed database
 COPY --from=builder /app/src/generated ./src/generated
 COPY --from=builder --chown=nextjs:nodejs /app/seed.db ./seed.db
-COPY --from=builder --chown=nextjs:nodejs /app/prisma ./prisma
-COPY --from=builder --chown=nextjs:nodejs /app/prisma.config.ts ./prisma.config.ts
 
-# Copy Prisma CLI for running migrations at startup
-COPY --from=builder /app/node_modules/prisma ./node_modules/prisma
-COPY --from=builder /app/node_modules/@prisma/engines ./node_modules/@prisma/engines
-COPY --from=builder /app/node_modules/dotenv ./node_modules/dotenv
+# Copy migrations and lightweight migration script
+COPY --from=builder --chown=nextjs:nodejs /app/prisma/migrations ./prisma/migrations
+COPY --from=builder --chown=nextjs:nodejs /app/scripts/migrate.mjs ./scripts/migrate.mjs
 
 # Data dir for SQLite (when using file: DATABASE_URL)
 RUN mkdir -p /app/data && chown nextjs:nodejs /app/data
@@ -59,5 +56,5 @@ EXPOSE 3000
 ENV PORT=3000
 ENV HOSTNAME="0.0.0.0"
 
-# Seed DB if first run, then apply any pending migrations, then start
-CMD ["sh", "-c", "if [ ! -f /app/data/photomagic.db ]; then cp /app/seed.db /app/data/photomagic.db; echo '[init] Created database from seed'; fi && npx prisma migrate deploy && node server.js"]
+# Seed DB if first run, apply pending migrations, then start
+CMD ["sh", "-c", "if [ ! -f /app/data/photomagic.db ]; then cp /app/seed.db /app/data/photomagic.db; echo '[init] Created database from seed'; fi && node scripts/migrate.mjs && node server.js"]
