@@ -40,9 +40,11 @@ COPY --from=builder /app/public ./public
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 
-# Copy generated Prisma client and seed database
+# Copy generated Prisma client, seed database, and migrations
 COPY --from=builder /app/src/generated ./src/generated
 COPY --from=builder --chown=nextjs:nodejs /app/seed.db ./seed.db
+COPY --from=builder --chown=nextjs:nodejs /app/prisma ./prisma
+COPY --from=builder --chown=nextjs:nodejs /app/prisma.config.ts ./prisma.config.ts
 
 # Data dir for SQLite (when using file: DATABASE_URL)
 RUN mkdir -p /app/data && chown nextjs:nodejs /app/data
@@ -52,5 +54,5 @@ EXPOSE 3000
 ENV PORT=3000
 ENV HOSTNAME="0.0.0.0"
 
-# Copy seed database if volume is empty, then start the server
-CMD ["sh", "-c", "if [ ! -f /app/data/photomagic.db ]; then cp /app/seed.db /app/data/photomagic.db; echo '[init] Created database from seed'; fi && node server.js"]
+# Seed DB if first run, then apply any pending migrations, then start
+CMD ["sh", "-c", "if [ ! -f /app/data/photomagic.db ]; then cp /app/seed.db /app/data/photomagic.db; echo '[init] Created database from seed'; fi && npx prisma migrate deploy && node server.js"]
