@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import Link from "next/link";
 import { toast } from "sonner";
 import ListingShell from "@/components/ListingsShell";
@@ -35,14 +35,31 @@ export default function UsersPage() {
   const [error, setError] = useState<string | null>(null);
   const [updatingId, setUpdatingId] = useState<string | null>(null);
   const [syncing, setSyncing] = useState(false);
+  const [search, setSearch] = useState("");
+  const [searching, setSearching] = useState(false);
+  const debounceRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
-    fetchUsers();
+    fetchUsers("");
   }, []);
 
-  async function fetchUsers() {
+  const debouncedSearch = useCallback((query: string) => {
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    setSearching(true);
+    debounceRef.current = setTimeout(() => {
+      fetchUsers(query);
+    }, 300);
+  }, []);
+
+  function handleSearchChange(value: string) {
+    setSearch(value);
+    debouncedSearch(value);
+  }
+
+  async function fetchUsers(query: string) {
     try {
-      const res = await fetch("/api/users");
+      const params = query ? `?search=${encodeURIComponent(query)}` : "";
+      const res = await fetch(`/api/users${params}`);
       if (!res.ok) {
         throw new Error(res.status === 403 ? "Access denied" : "Failed to fetch users");
       }
@@ -52,6 +69,7 @@ export default function UsersPage() {
       setError(err instanceof Error ? err.message : "An error occurred");
     } finally {
       setLoading(false);
+      setSearching(false);
     }
   }
 
@@ -65,7 +83,7 @@ export default function UsersPage() {
       }
       const { created, updated, total } = await res.json();
       toast.success(`Synced ${total} users: ${created} created, ${updated} updated`);
-      await fetchUsers();
+      await fetchUsers(search);
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Okta sync failed");
     } finally {
@@ -161,6 +179,24 @@ export default function UsersPage() {
         </div>
       </div>
 
+      <div className="mb-4">
+        <div className="relative">
+          <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-xl">search</span>
+          <input
+            type="text"
+            value={search}
+            onChange={(e) => handleSearchChange(e.target.value)}
+            placeholder="Search by name or email..."
+            className="w-full pl-10 pr-4 py-2.5 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-colors"
+          />
+          {searching && (
+            <div className="absolute right-3 top-1/2 -translate-y-1/2">
+              <div className="animate-spin rounded-full h-4 w-4 border-2 border-amber-500 border-t-transparent"></div>
+            </div>
+          )}
+        </div>
+      </div>
+
       <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
         <table className="w-full">
           <thead className="bg-gray-50 dark:bg-gray-700/50 border-b border-gray-200 dark:border-gray-700">
@@ -235,7 +271,7 @@ export default function UsersPage() {
 
         {users.length === 0 && (
           <div className="text-center py-12 text-gray-500 dark:text-gray-400">
-            No users found
+            {search ? `No users matching "${search}"` : "No users found"}
           </div>
         )}
       </div>

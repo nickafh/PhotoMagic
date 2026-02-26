@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { getAuthenticatedUser } from "@/lib/auth-helpers";
 import { prisma } from "@/lib/db";
 import { isAdmin } from "@/lib/permissions";
@@ -6,7 +6,7 @@ import { isAdmin } from "@/lib/permissions";
 export const runtime = "nodejs";
 
 // GET /api/users - List all users (ADMIN only)
-export async function GET() {
+export async function GET(request: NextRequest) {
   const user = await getAuthenticatedUser();
 
   if (!user) {
@@ -19,7 +19,20 @@ export async function GET() {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
+  const { searchParams } = request.nextUrl;
+  const search = searchParams.get("search")?.trim() || "";
+
+  const where = search
+    ? {
+        OR: [
+          { name: { contains: search, mode: "insensitive" as const } },
+          { email: { contains: search, mode: "insensitive" as const } },
+        ],
+      }
+    : {};
+
   const users = await prisma.user.findMany({
+    where,
     orderBy: { createdAt: "desc" },
     select: {
       id: true,
