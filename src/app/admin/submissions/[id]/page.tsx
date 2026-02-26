@@ -294,23 +294,15 @@ export default function ReviewSubmissionPage() {
             </div>
 
             <div className="flex items-center gap-3">
-              <button
-                onClick={handleDownload}
-                disabled={isDownloading}
-                className="flex items-center gap-2 px-4 py-2.5 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors font-medium disabled:opacity-50"
+              <a
+                href={submission?.id
+                  ? `/api/listings/${id}/downloads?submissionId=${submission.id}`
+                  : `/api/listings/${id}/downloads`}
+                className="flex items-center gap-2 px-4 py-2.5 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors font-medium"
               >
-                {isDownloading ? (
-                  <>
-                    <div className="w-4 h-4 border-2 border-gray-400 border-t-transparent rounded-full animate-spin" />
-                    Downloading...
-                  </>
-                ) : (
-                  <>
-                    <span className="material-symbols-outlined">download</span>
-                    Download ZIP
-                  </>
-                )}
-              </button>
+                <span className="material-symbols-outlined">download</span>
+                Download ZIP
+              </a>
 
               {listing.status === "SUBMITTED" && (
                 <>

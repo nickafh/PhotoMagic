@@ -9,7 +9,7 @@ import ExcludedPhotosSection from "@/components/ExcludedPhotosSection";
 import ListingShell from "@/components/ListingsShell";
 import SubmitModal from "@/components/SubmitModal";
 import StatusBadge from "@/components/StatusBadge";
-import { hasPermission } from "@/lib/permissions";
+import { hasPermission, canDownloadListing } from "@/lib/permissions";
 import { toast } from "sonner";
 
 export default function ListingPage() {
@@ -273,6 +273,11 @@ export default function ListingPage() {
     return hasPermission(role, "listing:reorder_submitted");
   }, [session, listing]);
 
+  const canDownload = useMemo(() => {
+    if (!session?.user || !listing) return false;
+    return canDownloadListing(session as any, listing.userId);
+  }, [session, listing]);
+
   if (authStatus === "loading" || !listing) {
     return (
       <div className="min-h-screen bg-background-light dark:bg-background-dark grid place-items-center">
@@ -312,6 +317,15 @@ export default function ListingPage() {
               e.target.value = "";
             }}
           />
+          {canDownload && (
+            <a
+              href={`/api/listings/${id}/downloads`}
+              className="flex items-center gap-2 px-4 py-2.5 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors font-medium text-sm"
+            >
+              <span className="material-symbols-outlined text-[18px]">download</span>
+              Download ZIP
+            </a>
+          )}
           <button
             onClick={() => setShowDeleteModal(true)}
             className="flex items-center justify-center w-10 h-10 text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-all"
@@ -360,6 +374,15 @@ export default function ListingPage() {
       }
       mobileActions={
         <div className="flex gap-2">
+          {canDownload && (
+            <a
+              href={`/api/listings/${id}/downloads`}
+              className="flex items-center justify-center w-11 h-11 text-slate-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-all shrink-0"
+              title="Download ZIP"
+            >
+              <span className="material-symbols-outlined text-xl">download</span>
+            </a>
+          )}
           <button
             onClick={() => setShowDeleteModal(true)}
             className="flex items-center justify-center w-11 h-11 text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-all shrink-0"
