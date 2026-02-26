@@ -20,6 +20,7 @@ export default function ListingPage() {
 
   const [listing, setListing] = useState<LegacyListing | null>(null);
   const [submission, setSubmission] = useState<PhotoOrderSubmissionData | null>(null);
+  const [accessDenied, setAccessDenied] = useState(false);
   const [showSubmitModal, setShowSubmitModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -57,6 +58,10 @@ export default function ListingPage() {
     if (!listingRes.ok) {
       if (listingRes.status === 401) {
         router.push("/auth/signin");
+        return;
+      }
+      if (listingRes.status === 403) {
+        setAccessDenied(true);
         return;
       }
       throw new Error(`Failed to load listing: ${listingRes.status}`);
@@ -376,6 +381,26 @@ export default function ListingPage() {
     if (listing.status !== "APPROVED") return false;
     return canDownloadListing(session as any, listing.userId);
   }, [session, listing]);
+
+  if (accessDenied) {
+    return (
+      <div className="min-h-screen bg-background-light dark:bg-background-dark grid place-items-center">
+        <div className="flex flex-col items-center gap-3 text-center px-4">
+          <span className="material-symbols-outlined text-4xl text-red-400">lock</span>
+          <h2 className="text-lg font-semibold text-slate-900 dark:text-white">Access Denied</h2>
+          <p className="text-slate-500 dark:text-slate-400 text-sm max-w-sm">
+            You don&apos;t have permission to view this listing.
+          </p>
+          <button
+            onClick={() => router.push("/dashboard")}
+            className="mt-2 px-4 py-2 text-sm font-medium text-white bg-amber-500 hover:bg-amber-600 rounded-lg transition-colors"
+          >
+            Go to Dashboard
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   if (authStatus === "loading" || !listing) {
     return (

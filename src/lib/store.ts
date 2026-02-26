@@ -521,6 +521,7 @@ function toSubmissionData(record: {
   note: string | null;
   submittedByUserId: string;
   approvedByUserId: string | null;
+  proposedToUserId: string | null;
   createdAt: Date;
   updatedAt: Date;
   submittedAt: Date;
@@ -542,6 +543,7 @@ export async function createSubmission(input: {
   orderedPhotoIds: string[];
   submittedByUserId: string;
   note?: string;
+  proposedToUserId?: string;
 }): Promise<PhotoOrderSubmissionData> {
   const record = await prisma.photoOrderSubmission.create({
     data: {
@@ -552,6 +554,7 @@ export async function createSubmission(input: {
       orderedPhotoIds: JSON.stringify(input.orderedPhotoIds),
       submittedByUserId: input.submittedByUserId,
       note: input.note,
+      proposedToUserId: input.proposedToUserId,
     },
   });
   return toSubmissionData(record);
@@ -610,6 +613,16 @@ export async function requestChangesOnSubmission(
     data,
   });
   return toSubmissionData(record);
+}
+
+export async function hasProposalForUser(listingId: string, userId: string): Promise<boolean> {
+  const count = await prisma.photoOrderSubmission.count({
+    where: {
+      listingId,
+      proposedToUserId: userId,
+    },
+  });
+  return count > 0;
 }
 
 function guessExt(name: string, mime: string) {

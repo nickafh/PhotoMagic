@@ -57,6 +57,7 @@ export async function POST(req: Request, ctx: Ctx) {
     orderedPhotoIds,
     submittedByUserId: user.id,
     note,
+    proposedToUserId: advisorId,
   });
 
   // Send notification email to the selected advisor (or listing owner as fallback)

@@ -35,9 +35,10 @@ model User {
   name                 String?
   oktaId               String?                @unique
   role                 Role                   @default(ADVISOR)
-  listings             Listing[]
-  submittedSubmissions PhotoOrderSubmission[]  @relation("submittedSubmissions")
-  approvedSubmissions  PhotoOrderSubmission[]  @relation("approvedSubmissions")
+  listings               Listing[]
+  submittedSubmissions   PhotoOrderSubmission[]  @relation("submittedSubmissions")
+  approvedSubmissions    PhotoOrderSubmission[]  @relation("approvedSubmissions")
+  proposedToSubmissions  PhotoOrderSubmission[]  @relation("proposedToSubmissions")
   createdAt            DateTime               @default(now())
   updatedAt            DateTime               @updatedAt
 }
@@ -83,10 +84,12 @@ model PhotoOrderSubmission {
   status            SubmissionStatus @default(SUBMITTED)
   orderedPhotoIds   String           // JSON array of photo IDs
   note              String?
-  submittedByUserId String
-  submittedBy       User             @relation("submittedSubmissions", fields: [submittedByUserId], references: [id])
-  approvedByUserId  String?
-  approvedBy        User?            @relation("approvedSubmissions", fields: [approvedByUserId], references: [id])
+  submittedByUserId  String
+  submittedBy        User             @relation("submittedSubmissions", fields: [submittedByUserId], references: [id])
+  approvedByUserId   String?
+  approvedBy         User?            @relation("approvedSubmissions", fields: [approvedByUserId], references: [id])
+  proposedToUserId   String?
+  proposedToUser     User?            @relation("proposedToSubmissions", fields: [proposedToUserId], references: [id])
   createdAt         DateTime         @default(now())
   updatedAt         DateTime         @updatedAt
   submittedAt       DateTime         @default(now())
@@ -94,4 +97,5 @@ model PhotoOrderSubmission {
 
   @@index([listingId])
   @@index([status])
+  @@index([proposedToUserId])
 }

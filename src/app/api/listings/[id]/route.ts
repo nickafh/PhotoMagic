@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { getAuthenticatedUser } from "@/lib/auth-helpers";
-import { getListingById, getListingWithUser, updateListing, deleteListing } from "@/lib/store";
+import { getListingById, getListingWithUser, updateListing, deleteListing, hasProposalForUser } from "@/lib/store";
 import { canAccessListing, canModifyListing, canDeleteListing, canReorderListing, canApproveListing } from "@/lib/permissions";
 import { sendEmail, buildApprovalEmail } from "@/lib/email";
 
@@ -32,7 +32,11 @@ export async function GET(_req: Request, ctx: Ctx) {
   const mockSession = { user: { id: user.id, role: user.role, email: user.email } };
 
   if (!canAccessListing(mockSession as any, listingWithUser.userId)) {
-    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    // Fallback: allow access if the user was proposed to on this listing
+    const proposedTo = await hasProposalForUser(id, user.id);
+    if (!proposedTo) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
   }
 
   const listing = await getListingById(id);

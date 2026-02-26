@@ -46,6 +46,7 @@ export type PhotoOrderSubmissionData = {
   note: string | null;
   submittedByUserId: string;
   approvedByUserId: string | null;
+  proposedToUserId: string | null;
   createdAt: Date;
   updatedAt: Date;
   submittedAt: Date;

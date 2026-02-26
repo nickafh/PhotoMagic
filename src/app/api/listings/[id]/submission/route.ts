@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { getAuthenticatedUser } from "@/lib/auth-helpers";
-import { getListingWithUser, getLatestSubmissionForListing } from "@/lib/store";
+import { getListingWithUser, getLatestSubmissionForListing, hasProposalForUser } from "@/lib/store";
 import { canAccessListing } from "@/lib/permissions";
 
 export const runtime = "nodejs";
@@ -29,7 +29,10 @@ export async function GET(_req: Request, ctx: Ctx) {
 
   const mockSession = { user: { id: user.id, role: user.role, email: user.email } };
   if (!canAccessListing(mockSession as any, listingWithUser.userId)) {
-    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    const proposedTo = await hasProposalForUser(id, user.id);
+    if (!proposedTo) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
   }
 
   const submission = await getLatestSubmissionForListing(id);
