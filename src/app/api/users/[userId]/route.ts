@@ -13,6 +13,37 @@ async function getUserId(ctx: Ctx): Promise<string> {
   return resolved.userId;
 }
 
+// GET /api/users/[userId] - Get user details (ADMIN or LISTINGS)
+export async function GET(req: Request, ctx: Ctx) {
+  const currentUser = await getAuthenticatedUser();
+
+  if (!currentUser) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  if (currentUser.role !== "ADMIN" && currentUser.role !== "LISTINGS") {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
+
+  const userId = await getUserId(ctx);
+
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: {
+      id: true,
+      email: true,
+      name: true,
+      role: true,
+    },
+  });
+
+  if (!user) {
+    return NextResponse.json({ error: "User not found" }, { status: 404 });
+  }
+
+  return NextResponse.json(user);
+}
+
 // PATCH /api/users/[userId] - Update user role (ADMIN only)
 export async function PATCH(req: Request, ctx: Ctx) {
   const currentUser = await getAuthenticatedUser();

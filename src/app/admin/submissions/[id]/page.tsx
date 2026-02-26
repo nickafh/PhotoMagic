@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { toast } from "sonner";
@@ -24,8 +24,13 @@ export default function ReviewSubmissionPage() {
   const [showChangesModal, setShowChangesModal] = useState(false);
   const [proposalNote, setProposalNote] = useState("");
   const [changesNote, setChangesNote] = useState("");
-  const [advisors, setAdvisors] = useState<{ id: string; email: string; name: string | null; role: string }[]>([]);
-  const [selectedAdvisorId, setSelectedAdvisorId] = useState<string>("");
+  const [advisorSearch, setAdvisorSearch] = useState("");
+  const [advisorResults, setAdvisorResults] = useState<{ id: string; email: string; name: string | null; role: string }[]>([]);
+  const [selectedAdvisor, setSelectedAdvisor] = useState<{ id: string; email: string; name: string | null } | null>(null);
+  const [showAdvisorDropdown, setShowAdvisorDropdown] = useState(false);
+  const [advisorSearchLoading, setAdvisorSearchLoading] = useState(false);
+  const advisorSearchTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const advisorDropdownRef = useRef<HTMLDivElement>(null);
 
   const fetchListing = useCallback(async () => {
     try {
@@ -57,20 +62,50 @@ export default function ReviewSubmissionPage() {
     }
   }, [id, fetchListing]);
 
-  // Fetch advisors for the propose modal
+  // Debounced advisor search
   useEffect(() => {
-    async function fetchAdvisors() {
+    if (advisorSearchTimer.current) {
+      clearTimeout(advisorSearchTimer.current);
+    }
+
+    if (!advisorSearch.trim()) {
+      setAdvisorResults([]);
+      setShowAdvisorDropdown(false);
+      return;
+    }
+
+    advisorSearchTimer.current = setTimeout(async () => {
+      setAdvisorSearchLoading(true);
       try {
-        const res = await fetch("/api/users/advisors");
+        const res = await fetch(`/api/users/advisors?search=${encodeURIComponent(advisorSearch.trim())}`);
         if (res.ok) {
           const data = await res.json();
-          setAdvisors(data);
+          setAdvisorResults(data);
+          setShowAdvisorDropdown(data.length > 0);
         }
       } catch (err) {
-        console.error("Failed to fetch advisors:", err);
+        console.error("Failed to search advisors:", err);
+      } finally {
+        setAdvisorSearchLoading(false);
+      }
+    }, 300);
+
+    return () => {
+      if (advisorSearchTimer.current) {
+        clearTimeout(advisorSearchTimer.current);
+      }
+    };
+  }, [advisorSearch]);
+
+  // Close advisor dropdown on outside click
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      if (advisorDropdownRef.current && !advisorDropdownRef.current.contains(e.target as Node)) {
+        setShowAdvisorDropdown(false);
       }
     }
-    fetchAdvisors();
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
   async function handleApprove() {
@@ -140,7 +175,7 @@ export default function ReviewSubmissionPage() {
   }
 
   async function handlePropose() {
-    if (!listing || !selectedAdvisorId) return;
+    if (!listing || !selectedAdvisor) return;
     setIsProposing(true);
     try {
       // Send the current photo order (non-excluded first, then excluded) as the proposal
@@ -155,7 +190,7 @@ export default function ReviewSubmissionPage() {
         body: JSON.stringify({
           orderedPhotoIds,
           note: proposalNote || undefined,
-          advisorId: selectedAdvisorId,
+          advisorId: selectedAdvisor.id,
         }),
       });
 
@@ -289,10 +324,22 @@ export default function ReviewSubmissionPage() {
                   </button>
 
                   <button
-                    onClick={() => {
+                    onClick={async () => {
                       // Pre-select the listing owner if they're an advisor
-                      const ownerIsAdvisor = advisors.some((a) => a.id === listing?.userId);
-                      setSelectedAdvisorId(ownerIsAdvisor ? listing?.userId || "" : "");
+                      setSelectedAdvisor(null);
+                      setAdvisorSearch("");
+                      setAdvisorResults([]);
+                      if (listing?.userId) {
+                        try {
+                          const res = await fetch(`/api/users/${listing.userId}`);
+                          if (res.ok) {
+                            const owner = await res.json();
+                            if (owner.role === "ADVISOR") {
+                              setSelectedAdvisor({ id: owner.id, email: owner.email, name: owner.name });
+                            }
+                          }
+                        } catch {}
+                      }
                       setShowProposeModal(true);
                     }}
                     className="flex items-center gap-2 px-4 py-2.5 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors font-medium disabled:opacity-50"
@@ -397,18 +444,80 @@ export default function ReviewSubmissionPage() {
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                   Select Advisor
                 </label>
-                <select
-                  value={selectedAdvisorId}
-                  onChange={(e) => setSelectedAdvisorId(e.target.value)}
-                  className="w-full px-3 py-2 mb-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                >
-                  <option value="">Choose an advisor...</option>
-                  {advisors.map((a) => (
-                    <option key={a.id} value={a.id}>
-                      {a.name || a.email}{a.id === listing?.userId ? " (listing owner)" : ""}
-                    </option>
-                  ))}
-                </select>
+                {selectedAdvisor ? (
+                  <div className="flex items-center gap-2 mb-3 px-3 py-2 bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-700 rounded-lg">
+                    <div className="flex-1 min-w-0">
+                      <span className="font-medium text-gray-900 dark:text-white">
+                        {selectedAdvisor.name || selectedAdvisor.email}
+                      </span>
+                      {selectedAdvisor.name && (
+                        <span className="text-sm text-gray-500 dark:text-gray-400 ml-2">
+                          {selectedAdvisor.email}
+                        </span>
+                      )}
+                      {selectedAdvisor.id === listing?.userId && (
+                        <span className="ml-2 text-xs text-purple-600 dark:text-purple-400">(listing owner)</span>
+                      )}
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setSelectedAdvisor(null);
+                        setAdvisorSearch("");
+                      }}
+                      className="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 rounded"
+                    >
+                      <span className="material-symbols-outlined text-lg">close</span>
+                    </button>
+                  </div>
+                ) : (
+                  <div className="relative mb-3" ref={advisorDropdownRef}>
+                    <div className="relative">
+                      <input
+                        type="text"
+                        value={advisorSearch}
+                        onChange={(e) => setAdvisorSearch(e.target.value)}
+                        onFocus={() => {
+                          if (advisorResults.length > 0) setShowAdvisorDropdown(true);
+                        }}
+                        placeholder="Search by name or email..."
+                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                      />
+                      {advisorSearchLoading && (
+                        <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                          <div className="w-4 h-4 border-2 border-purple-400 border-t-transparent rounded-full animate-spin" />
+                        </div>
+                      )}
+                    </div>
+                    {showAdvisorDropdown && advisorResults.length > 0 && (
+                      <div className="absolute z-10 mt-1 w-full bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg shadow-lg max-h-48 overflow-y-auto">
+                        {advisorResults.map((a) => (
+                          <button
+                            key={a.id}
+                            type="button"
+                            onClick={() => {
+                              setSelectedAdvisor({ id: a.id, email: a.email, name: a.name });
+                              setAdvisorSearch("");
+                              setAdvisorResults([]);
+                              setShowAdvisorDropdown(false);
+                            }}
+                            className="w-full text-left px-3 py-2 hover:bg-purple-50 dark:hover:bg-purple-900/20 transition-colors first:rounded-t-lg last:rounded-b-lg"
+                          >
+                            <div className="font-medium text-gray-900 dark:text-white text-sm">
+                              {a.name || a.email}
+                              {a.id === listing?.userId && (
+                                <span className="ml-2 text-xs text-purple-600 dark:text-purple-400">(listing owner)</span>
+                              )}
+                            </div>
+                            {a.name && (
+                              <div className="text-xs text-gray-500 dark:text-gray-400">{a.email}</div>
+                            )}
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
                 <textarea
                   value={proposalNote}
                   onChange={(e) => setProposalNote(e.target.value)}
@@ -427,7 +536,7 @@ export default function ReviewSubmissionPage() {
                 </button>
                 <button
                   onClick={handlePropose}
-                  disabled={isProposing || !selectedAdvisorId}
+                  disabled={isProposing || !selectedAdvisor}
                   className="flex-1 px-4 py-2.5 bg-purple-600 hover:bg-purple-700 text-white font-semibold rounded-lg transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
                 >
                   {isProposing ? (

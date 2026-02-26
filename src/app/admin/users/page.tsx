@@ -34,6 +34,7 @@ export default function UsersPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [updatingId, setUpdatingId] = useState<string | null>(null);
+  const [syncing, setSyncing] = useState(false);
 
   useEffect(() => {
     fetchUsers();
@@ -51,6 +52,24 @@ export default function UsersPage() {
       setError(err instanceof Error ? err.message : "An error occurred");
     } finally {
       setLoading(false);
+    }
+  }
+
+  async function handleSyncOkta() {
+    setSyncing(true);
+    try {
+      const res = await fetch("/api/users/sync-okta", { method: "POST" });
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.error || "Sync failed");
+      }
+      const { created, updated, total } = await res.json();
+      toast.success(`Synced ${total} users: ${created} created, ${updated} updated`);
+      await fetchUsers();
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Okta sync failed");
+    } finally {
+      setSyncing(false);
     }
   }
 
@@ -114,13 +133,32 @@ export default function UsersPage() {
             Manage user roles and permissions
           </p>
         </div>
-        <Link
-          href="/admin"
-          className="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white flex items-center gap-1"
-        >
-          <span className="material-symbols-outlined text-lg">arrow_back</span>
-          Back to Admin
-        </Link>
+        <div className="flex items-center gap-3">
+          <button
+            onClick={handleSyncOkta}
+            disabled={syncing}
+            className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg transition-colors disabled:opacity-50"
+          >
+            {syncing ? (
+              <>
+                <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                Syncing...
+              </>
+            ) : (
+              <>
+                <span className="material-symbols-outlined text-lg">sync</span>
+                Sync from Okta
+              </>
+            )}
+          </button>
+          <Link
+            href="/admin"
+            className="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white flex items-center gap-1"
+          >
+            <span className="material-symbols-outlined text-lg">arrow_back</span>
+            Back to Admin
+          </Link>
+        </div>
       </div>
 
       <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
