@@ -213,14 +213,13 @@ export default function ReviewSubmissionPage() {
   }
 
   async function handleRequestChanges() {
-    if (!submission) return;
     setIsRequestingChanges(true);
     try {
       const res = await fetch(`/api/listings/${id}/request-changes`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          submissionId: submission.id,
+          submissionId: submission?.id,
           note: changesNote || undefined,
         }),
       });
@@ -317,8 +316,7 @@ export default function ReviewSubmissionPage() {
                 <>
                   <button
                     onClick={() => setShowChangesModal(true)}
-                    disabled={!submission || submission.status !== "SUBMITTED"}
-                    className="flex items-center gap-2 px-4 py-2.5 border border-amber-300 dark:border-amber-600 text-amber-700 dark:text-amber-300 rounded-lg hover:bg-amber-50 dark:hover:bg-amber-900/20 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="flex items-center gap-2 px-4 py-2.5 border border-amber-300 dark:border-amber-600 text-amber-700 dark:text-amber-300 rounded-lg hover:bg-amber-50 dark:hover:bg-amber-900/20 transition-colors font-medium"
                   >
                     <span className="material-symbols-outlined">edit_note</span>
                     Request Changes
