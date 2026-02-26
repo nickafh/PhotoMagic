@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { getAuthenticatedUser } from "@/lib/auth-helpers";
-import { getListingWithUser, createSubmission, getUserById } from "@/lib/store";
+import { getListingWithUser, createSubmission, getUserById, updateListing } from "@/lib/store";
 import { sendEmail, buildProposalEmail } from "@/lib/email";
 
 export const runtime = "nodejs";
@@ -43,6 +43,11 @@ export async function POST(req: Request, ctx: Ctx) {
     if (!listingPhotoIds.has(pid)) {
       return NextResponse.json({ error: `Photo ${pid} does not belong to this listing` }, { status: 400 });
     }
+  }
+
+  // If listing is still DRAFT, move it to SUBMITTED
+  if (listingWithUser.status === "DRAFT") {
+    await updateListing(id, { status: "SUBMITTED" });
   }
 
   const submission = await createSubmission({

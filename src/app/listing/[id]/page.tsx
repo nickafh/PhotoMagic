@@ -9,7 +9,7 @@ import ExcludedPhotosSection from "@/components/ExcludedPhotosSection";
 import ListingShell from "@/components/ListingsShell";
 import SubmitModal from "@/components/SubmitModal";
 import StatusBadge from "@/components/StatusBadge";
-import { hasPermission, canDownloadListing } from "@/lib/permissions";
+import { hasPermission, canDownloadListing, isListingsTeamOrAdmin } from "@/lib/permissions";
 import { toast } from "sonner";
 
 export default function ListingPage() {
@@ -29,6 +29,16 @@ export default function ListingPage() {
   const [uploadProgress, setUploadProgress] = useState<{ current: number; total: number } | null>(
     null
   );
+  const [showProposeModal, setShowProposeModal] = useState(false);
+  const [isProposing, setIsProposing] = useState(false);
+  const [proposalNote, setProposalNote] = useState("");
+  const [advisorSearch, setAdvisorSearch] = useState("");
+  const [advisorResults, setAdvisorResults] = useState<{ id: string; email: string; name: string | null; role: string }[]>([]);
+  const [selectedAdvisor, setSelectedAdvisor] = useState<{ id: string; email: string; name: string | null } | null>(null);
+  const [showAdvisorDropdown, setShowAdvisorDropdown] = useState(false);
+  const [advisorSearchLoading, setAdvisorSearchLoading] = useState(false);
+  const advisorSearchTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const advisorDropdownRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const isUploading = uploadProgress !== null;
@@ -257,6 +267,90 @@ export default function ListingPage() {
     }
   }
 
+  // Debounced advisor search
+  useEffect(() => {
+    if (advisorSearchTimer.current) {
+      clearTimeout(advisorSearchTimer.current);
+    }
+
+    if (!advisorSearch.trim()) {
+      setAdvisorResults([]);
+      setShowAdvisorDropdown(false);
+      return;
+    }
+
+    advisorSearchTimer.current = setTimeout(async () => {
+      setAdvisorSearchLoading(true);
+      try {
+        const res = await fetch(`/api/users/advisors?search=${encodeURIComponent(advisorSearch.trim())}`);
+        if (res.ok) {
+          const data = await res.json();
+          setAdvisorResults(data);
+          setShowAdvisorDropdown(data.length > 0);
+        }
+      } catch (err) {
+        console.error("Failed to search advisors:", err);
+      } finally {
+        setAdvisorSearchLoading(false);
+      }
+    }, 300);
+
+    return () => {
+      if (advisorSearchTimer.current) {
+        clearTimeout(advisorSearchTimer.current);
+      }
+    };
+  }, [advisorSearch]);
+
+  // Close advisor dropdown on outside click
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      if (advisorDropdownRef.current && !advisorDropdownRef.current.contains(e.target as Node)) {
+        setShowAdvisorDropdown(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  async function handlePropose() {
+    if (!listing || !selectedAdvisor) return;
+    setIsProposing(true);
+    try {
+      const orderedPhotoIds = [
+        ...listing.photoIds.filter((pid) => !listing.photos[pid]?.excluded),
+        ...listing.photoIds.filter((pid) => listing.photos[pid]?.excluded),
+      ];
+
+      const res = await fetch(`/api/listings/${id}/propose`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          orderedPhotoIds,
+          note: proposalNote || undefined,
+          advisorId: selectedAdvisor.id,
+        }),
+      });
+
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.error || "Failed to propose");
+      }
+
+      await refresh();
+      setShowProposeModal(false);
+      setProposalNote("");
+      setSelectedAdvisor(null);
+      setAdvisorSearch("");
+      toast.success("Proposal sent to the advisor.");
+    } catch (error) {
+      console.error("Propose error:", error);
+      toast.error("Failed to send proposal");
+    } finally {
+      setIsProposing(false);
+    }
+  }
+
   // Determine if user can reorder photos based on role and listing status
   // Must be called before early return to maintain hooks order
   const canReorder = useMemo(() => {
@@ -299,6 +393,7 @@ export default function ListingPage() {
   ).length ?? 0;
 
   const canSubmit = listing.status === "DRAFT" && activePhotoCount > 0;
+  const isListingsOrAdmin = isListingsTeamOrAdmin(session as any);
 
   return (
     <ListingShell
@@ -358,14 +453,41 @@ export default function ListingPage() {
             )}
           </button>
           {listing.status === "DRAFT" ? (
-            <button
-              onClick={() => setShowSubmitModal(true)}
-              disabled={!canSubmit}
-              className="btn-gold flex items-center gap-2 px-6 py-2.5 rounded-lg text-sm uppercase tracking-wider"
-            >
-              <span className="material-symbols-outlined text-[18px]">send</span>
-              Submit for Review
-            </button>
+            isListingsOrAdmin ? (
+              <button
+                onClick={async () => {
+                  setSelectedAdvisor(null);
+                  setAdvisorSearch("");
+                  setAdvisorResults([]);
+                  if (listing?.userId) {
+                    try {
+                      const res = await fetch(`/api/users/${listing.userId}`);
+                      if (res.ok) {
+                        const owner = await res.json();
+                        if (owner.role === "ADVISOR") {
+                          setSelectedAdvisor({ id: owner.id, email: owner.email, name: owner.name });
+                        }
+                      }
+                    } catch {}
+                  }
+                  setShowProposeModal(true);
+                }}
+                disabled={!canSubmit}
+                className="flex items-center gap-2 px-6 py-2.5 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors font-medium text-sm uppercase tracking-wider disabled:opacity-50"
+              >
+                <span className="material-symbols-outlined text-[18px]">send</span>
+                Propose to Advisor
+              </button>
+            ) : (
+              <button
+                onClick={() => setShowSubmitModal(true)}
+                disabled={!canSubmit}
+                className="btn-gold flex items-center gap-2 px-6 py-2.5 rounded-lg text-sm uppercase tracking-wider"
+              >
+                <span className="material-symbols-outlined text-[18px]">send</span>
+                Submit for Review
+              </button>
+            )
           ) : (
             <button
               disabled
@@ -415,14 +537,41 @@ export default function ListingPage() {
             )}
           </button>
           {listing.status === "DRAFT" ? (
-            <button
-              onClick={() => setShowSubmitModal(true)}
-              disabled={!canSubmit}
-              className="flex-1 btn-gold flex items-center justify-center gap-2 py-2.5 px-4 rounded-lg text-xs tracking-widest uppercase"
-            >
-              <span className="material-symbols-outlined text-lg">send</span>
-              Submit
-            </button>
+            isListingsOrAdmin ? (
+              <button
+                onClick={async () => {
+                  setSelectedAdvisor(null);
+                  setAdvisorSearch("");
+                  setAdvisorResults([]);
+                  if (listing?.userId) {
+                    try {
+                      const res = await fetch(`/api/users/${listing.userId}`);
+                      if (res.ok) {
+                        const owner = await res.json();
+                        if (owner.role === "ADVISOR") {
+                          setSelectedAdvisor({ id: owner.id, email: owner.email, name: owner.name });
+                        }
+                      }
+                    } catch {}
+                  }
+                  setShowProposeModal(true);
+                }}
+                disabled={!canSubmit}
+                className="flex-1 flex items-center justify-center gap-2 bg-purple-600 hover:bg-purple-700 text-white py-2.5 px-4 rounded-lg font-medium text-xs tracking-widest uppercase disabled:opacity-50"
+              >
+                <span className="material-symbols-outlined text-lg">send</span>
+                Propose
+              </button>
+            ) : (
+              <button
+                onClick={() => setShowSubmitModal(true)}
+                disabled={!canSubmit}
+                className="flex-1 btn-gold flex items-center justify-center gap-2 py-2.5 px-4 rounded-lg text-xs tracking-widest uppercase"
+              >
+                <span className="material-symbols-outlined text-lg">send</span>
+                Submit
+              </button>
+            )
           ) : (
             <button
               disabled
@@ -528,6 +677,137 @@ export default function ListingPage() {
           onConfirm={handleDelete}
           isDeleting={isDeleting}
         />
+      )}
+
+      {showProposeModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div
+            className="absolute inset-0 bg-black/60 backdrop-blur-sm animate-fade-in"
+            onClick={() => setShowProposeModal(false)}
+          />
+          <div className="relative bg-white dark:bg-slate-800 rounded-2xl shadow-2xl w-full max-w-md animate-scale-in">
+            <div className="p-6">
+              <div className="w-14 h-14 mx-auto mb-4 rounded-full bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center">
+                <span className="material-symbols-outlined text-purple-600 dark:text-purple-400 text-3xl">
+                  send
+                </span>
+              </div>
+              <h3 className="text-xl font-display font-semibold text-center text-slate-900 dark:text-white mb-2">
+                Propose Order to Advisor
+              </h3>
+              <p className="text-center text-slate-600 dark:text-slate-300 mb-4">
+                This will send the current photo order as a proposal to the advisor for approval.
+              </p>
+              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
+                Select Advisor
+              </label>
+              {selectedAdvisor ? (
+                <div className="flex items-center gap-2 mb-3 px-3 py-2 bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-700 rounded-lg">
+                  <div className="flex-1 min-w-0">
+                    <span className="font-medium text-slate-900 dark:text-white">
+                      {selectedAdvisor.name || selectedAdvisor.email}
+                    </span>
+                    {selectedAdvisor.name && (
+                      <span className="text-sm text-slate-500 dark:text-slate-400 ml-2">
+                        {selectedAdvisor.email}
+                      </span>
+                    )}
+                    {selectedAdvisor.id === listing?.userId && (
+                      <span className="ml-2 text-xs text-purple-600 dark:text-purple-400">(listing owner)</span>
+                    )}
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSelectedAdvisor(null);
+                      setAdvisorSearch("");
+                    }}
+                    className="p-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 rounded"
+                  >
+                    <span className="material-symbols-outlined text-lg">close</span>
+                  </button>
+                </div>
+              ) : (
+                <div className="relative mb-3" ref={advisorDropdownRef}>
+                  <div className="relative">
+                    <input
+                      type="text"
+                      value={advisorSearch}
+                      onChange={(e) => setAdvisorSearch(e.target.value)}
+                      onFocus={() => {
+                        if (advisorResults.length > 0) setShowAdvisorDropdown(true);
+                      }}
+                      placeholder="Search by name or email..."
+                      className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-white placeholder-slate-400 focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                    />
+                    {advisorSearchLoading && (
+                      <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                        <div className="w-4 h-4 border-2 border-purple-400 border-t-transparent rounded-full animate-spin" />
+                      </div>
+                    )}
+                  </div>
+                  {showAdvisorDropdown && advisorResults.length > 0 && (
+                    <div className="absolute z-10 mt-1 w-full bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg shadow-lg max-h-48 overflow-y-auto">
+                      {advisorResults.map((a) => (
+                        <button
+                          key={a.id}
+                          type="button"
+                          onClick={() => {
+                            setSelectedAdvisor({ id: a.id, email: a.email, name: a.name });
+                            setAdvisorSearch("");
+                            setAdvisorResults([]);
+                            setShowAdvisorDropdown(false);
+                          }}
+                          className="w-full text-left px-3 py-2 hover:bg-purple-50 dark:hover:bg-purple-900/20 transition-colors first:rounded-t-lg last:rounded-b-lg"
+                        >
+                          <div className="font-medium text-slate-900 dark:text-white text-sm">
+                            {a.name || a.email}
+                            {a.id === listing?.userId && (
+                              <span className="ml-2 text-xs text-purple-600 dark:text-purple-400">(listing owner)</span>
+                            )}
+                          </div>
+                          {a.name && (
+                            <div className="text-xs text-slate-500 dark:text-slate-400">{a.email}</div>
+                          )}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+              <textarea
+                value={proposalNote}
+                onChange={(e) => setProposalNote(e.target.value)}
+                placeholder="Add a note (optional)"
+                className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-white placeholder-slate-400 focus:ring-2 focus:ring-purple-500 focus:border-transparent resize-none"
+                rows={3}
+              />
+            </div>
+            <div className="flex gap-3 p-4 border-t border-slate-200 dark:border-slate-700">
+              <button
+                onClick={() => setShowProposeModal(false)}
+                disabled={isProposing}
+                className="flex-1 px-4 py-2.5 text-slate-700 dark:text-slate-300 font-semibold rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors disabled:opacity-50"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handlePropose}
+                disabled={isProposing || !selectedAdvisor}
+                className="flex-1 px-4 py-2.5 bg-purple-600 hover:bg-purple-700 text-white font-semibold rounded-lg transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+              >
+                {isProposing ? (
+                  <>
+                    <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    Sending...
+                  </>
+                ) : (
+                  "Send Proposal"
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </ListingShell>
   );
