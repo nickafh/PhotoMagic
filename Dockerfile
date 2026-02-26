@@ -46,6 +46,11 @@ COPY --from=builder --chown=nextjs:nodejs /app/seed.db ./seed.db
 COPY --from=builder --chown=nextjs:nodejs /app/prisma ./prisma
 COPY --from=builder --chown=nextjs:nodejs /app/prisma.config.ts ./prisma.config.ts
 
+# Copy Prisma CLI for running migrations at startup
+COPY --from=builder /app/node_modules/prisma ./node_modules/prisma
+COPY --from=builder /app/node_modules/@prisma/engines ./node_modules/@prisma/engines
+COPY --from=builder /app/node_modules/dotenv ./node_modules/dotenv
+
 # Data dir for SQLite (when using file: DATABASE_URL)
 RUN mkdir -p /app/data && chown nextjs:nodejs /app/data
 
