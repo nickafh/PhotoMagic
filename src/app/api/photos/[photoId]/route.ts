@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { getAuthenticatedUser } from "@/lib/auth-helpers";
-import { getPhotoFile, getListingWithUser, togglePhotoExcluded } from "@/lib/store";
+import { getPhotoFile, getListingWithUser, togglePhotoExcluded, hasProposalForUser } from "@/lib/store";
 import { canAccessListing, canModifyListing } from "@/lib/permissions";
 import { downloadToBuffer } from "@/lib/blob";
 
@@ -40,7 +40,11 @@ export async function GET(req: Request, ctx: Ctx) {
   const mockSession = { user: { id: user.id, role: user.role, email: user.email } };
 
   if (!canAccessListing(mockSession as any, listingWithUser.userId)) {
-    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    // Fallback: allow access if the user was proposed to on this listing
+    const proposedTo = await hasProposalForUser(listingId, user.id);
+    if (!proposedTo) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
   }
 
   const file = await getPhotoFile(listingId, photoId, useThumbnail);
