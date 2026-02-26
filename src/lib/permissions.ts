@@ -170,7 +170,8 @@ export function isAdmin(session: Session | null): boolean {
 /**
  * Check if user can reorder photos in a listing
  * - DRAFT: Anyone with listing:update can reorder
- * - SUBMITTED/APPROVED: Only users with listing:reorder_submitted can reorder
+ * - SUBMITTED: Only users with listing:reorder_submitted can reorder
+ * - APPROVED: No one can reorder (order is locked)
  */
 export function canReorderListing(
   session: Session | null,
@@ -178,6 +179,9 @@ export function canReorderListing(
   listingStatus: "DRAFT" | "SUBMITTED" | "APPROVED"
 ): boolean {
   if (!session?.user) return false;
+
+  // APPROVED listings are locked — no reordering
+  if (listingStatus === "APPROVED") return false;
 
   const role = session.user.role;
   const isOwner = session.user.id === listingUserId;
@@ -187,6 +191,6 @@ export function canReorderListing(
     return isOwner && hasPermission(role, "listing:update");
   }
 
-  // For SUBMITTED/APPROVED, only LISTINGS/ADMIN can reorder
+  // For SUBMITTED, only LISTINGS/ADMIN can reorder
   return hasPermission(role, "listing:reorder_submitted");
 }

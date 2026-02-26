@@ -261,6 +261,10 @@ export default function ListingPage() {
   // Must be called before early return to maintain hooks order
   const canReorder = useMemo(() => {
     if (!session?.user || !listing) return false;
+
+    // APPROVED: Lock the order for everyone
+    if (listing.status === "APPROVED") return false;
+
     const role = session.user.role;
     const isOwner = session.user.id === listing.userId;
 
@@ -269,12 +273,13 @@ export default function ListingPage() {
       return isOwner;
     }
 
-    // SUBMITTED/APPROVED: Only LISTINGS or ADMIN can reorder
+    // SUBMITTED: Only LISTINGS or ADMIN can reorder
     return hasPermission(role, "listing:reorder_submitted");
   }, [session, listing]);
 
   const canDownload = useMemo(() => {
     if (!session?.user || !listing) return false;
+    if (listing.status !== "APPROVED") return false;
     return canDownloadListing(session as any, listing.userId);
   }, [session, listing]);
 
