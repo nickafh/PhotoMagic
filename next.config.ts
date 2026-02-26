@@ -3,6 +3,7 @@ import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
   output: "standalone",
   reactCompiler: true,
+  serverExternalPackages: ["archiver", "sharp"],
   experimental: {
     viewTransition: true,
     // Increase body size limit for photo uploads

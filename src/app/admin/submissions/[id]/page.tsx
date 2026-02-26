@@ -154,7 +154,8 @@ export default function ReviewSubmissionPage() {
         : `/api/listings/${id}/downloads`;
       const res = await fetch(downloadUrl);
       if (!res.ok) {
-        throw new Error("Download failed");
+        const errData = await res.json().catch(() => null);
+        throw new Error(errData?.error || `Download failed (${res.status})`);
       }
 
       const blob = await res.blob();
@@ -168,7 +169,7 @@ export default function ReviewSubmissionPage() {
       document.body.removeChild(a);
     } catch (error) {
       console.error("Download error:", error);
-      toast.error("Failed to download photos");
+      toast.error(error instanceof Error ? error.message : "Failed to download photos");
     } finally {
       setIsDownloading(false);
     }
