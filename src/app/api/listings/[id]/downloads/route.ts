@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { PassThrough } from "stream";
 import { getAuthenticatedUser } from "@/lib/auth-helpers";
 import { getListingById, getListingWithUser, getPhotoFile, getSubmissionById, getLatestSubmissionForListing } from "@/lib/store";
 import { canDownloadListing } from "@/lib/permissions";
@@ -98,10 +99,9 @@ export async function GET(req: Request, ctx: Ctx) {
     }
   }
 
-  // Download all photo buffers first, then build the archive
-  const archive = archiver("zip", { zlib: { level: 9 } });
+  // Download all photo buffers first
+  const photoBuffers: { name: string; buf: Buffer }[] = [];
 
-  // Add included photos to root
   for (let i = 0; i < includedPhotos.length; i++) {
     const photoId = includedPhotos[i];
     const file = await getPhotoFile(listing.id, photoId);
@@ -111,13 +111,12 @@ export async function GET(req: Request, ctx: Ctx) {
     const name = `${pad3(i + 1)}_${safe}.${ext}`;
     try {
       const buf = await downloadToBuffer(file.blobPath);
-      archive.append(buf, { name });
+      photoBuffers.push({ name, buf });
     } catch (err) {
-      console.error(`Failed to add photo ${photoId} to zip:`, err);
+      console.error(`Failed to download photo ${photoId}:`, err);
     }
   }
 
-  // Add excluded photos to do_not_use/ subfolder
   for (let i = 0; i < excludedPhotos.length; i++) {
     const photoId = excludedPhotos[i];
     const file = await getPhotoFile(listing.id, photoId);
@@ -127,22 +126,31 @@ export async function GET(req: Request, ctx: Ctx) {
     const name = `do_not_use/${pad3(i + 1)}_${safe}.${ext}`;
     try {
       const buf = await downloadToBuffer(file.blobPath);
-      archive.append(buf, { name });
+      photoBuffers.push({ name, buf });
     } catch (err) {
-      console.error(`Failed to add photo ${photoId} to zip:`, err);
+      console.error(`Failed to download photo ${photoId}:`, err);
     }
   }
 
-  // Collect archive output into a single buffer
+  // Build the ZIP archive by piping through a PassThrough stream
+  const archive = archiver("zip", { zlib: { level: 9 } });
+  const passThrough = new PassThrough();
+  archive.pipe(passThrough);
+
+  for (const { name, buf } of photoBuffers) {
+    archive.append(buf, { name });
+  }
+
   const zipBuffer = await new Promise<Buffer>((resolve, reject) => {
     const chunks: Buffer[] = [];
-    archive.on("data", (chunk: Buffer) => chunks.push(chunk));
-    archive.on("end", () => resolve(Buffer.concat(chunks)));
+    passThrough.on("data", (chunk: Buffer) => chunks.push(chunk));
+    passThrough.on("end", () => resolve(Buffer.concat(chunks)));
+    passThrough.on("error", reject);
     archive.on("error", reject);
     archive.finalize();
   });
 
-  return new Response(zipBuffer as unknown as BodyInit, {
+  return new NextResponse(new Uint8Array(zipBuffer), {
     headers: {
       "Content-Type": "application/zip",
       "Content-Disposition": `attachment; filename="${filename}"`,

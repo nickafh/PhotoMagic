@@ -48,11 +48,7 @@ export async function uploadThumbnail(
 export async function downloadToBuffer(blobPath: string): Promise<Buffer> {
   const container = getContainerClient();
   const blockBlobClient = container.getBlockBlobClient(blobPath);
-  const downloadResponse = await blockBlobClient.download();
-  if (!downloadResponse.readableStreamBody) {
-    throw new Error(`Blob not found: ${blobPath}`);
-  }
-  return streamToBuffer(downloadResponse.readableStreamBody);
+  return blockBlobClient.downloadToBuffer();
 }
 
 /** Returns a Node.js Readable stream for piping to archiver etc. */
