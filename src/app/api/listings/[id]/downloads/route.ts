@@ -4,7 +4,7 @@ import { getListingById, getListingWithUser, getPhotoFile, getSubmissionById, ge
 import { canDownloadListing } from "@/lib/permissions";
 import { zipFilenameForListing } from "@/lib/zip";
 import { pad3, sanitizeAddress } from "@/lib/sanitize";
-import { downloadStream } from "@/lib/blob";
+import { downloadToBuffer } from "@/lib/blob";
 import archiver from "archiver";
 
 export const runtime = "nodejs";
@@ -98,18 +98,8 @@ export async function GET(req: Request, ctx: Ctx) {
     }
   }
 
-  // Create archive and collect into a buffer
+  // Download all photo buffers first, then build the archive
   const archive = archiver("zip", { zlib: { level: 9 } });
-  const chunks: Buffer[] = [];
-
-  archive.on("data", (chunk: Buffer) => {
-    chunks.push(chunk);
-  });
-
-  archive.on("error", (err) => {
-    console.error("Archive error:", err);
-    throw err;
-  });
 
   // Add included photos to root
   for (let i = 0; i < includedPhotos.length; i++) {
@@ -120,8 +110,8 @@ export async function GET(req: Request, ctx: Ctx) {
     const ext = file.meta.ext || "jpg";
     const name = `${pad3(i + 1)}_${safe}.${ext}`;
     try {
-      const stream = await downloadStream(file.blobPath);
-      archive.append(stream, { name });
+      const buf = await downloadToBuffer(file.blobPath);
+      archive.append(buf, { name });
     } catch (err) {
       console.error(`Failed to add photo ${photoId} to zip:`, err);
     }
@@ -136,27 +126,27 @@ export async function GET(req: Request, ctx: Ctx) {
     const ext = file.meta.ext || "jpg";
     const name = `do_not_use/${pad3(i + 1)}_${safe}.${ext}`;
     try {
-      const stream = await downloadStream(file.blobPath);
-      archive.append(stream, { name });
+      const buf = await downloadToBuffer(file.blobPath);
+      archive.append(buf, { name });
     } catch (err) {
       console.error(`Failed to add photo ${photoId} to zip:`, err);
     }
   }
 
-  // Wait for archive to fully finalize into buffer
-  await archive.finalize();
-  await new Promise<void>((resolve, reject) => {
-    archive.on("end", resolve);
+  // Collect archive output into a single buffer
+  const zipBuffer = await new Promise<Buffer>((resolve, reject) => {
+    const chunks: Buffer[] = [];
+    archive.on("data", (chunk: Buffer) => chunks.push(chunk));
+    archive.on("end", () => resolve(Buffer.concat(chunks)));
     archive.on("error", reject);
+    archive.finalize();
   });
 
-  const buffer = Buffer.concat(chunks);
-
-  return new Response(buffer, {
+  return new Response(zipBuffer as unknown as BodyInit, {
     headers: {
       "Content-Type": "application/zip",
       "Content-Disposition": `attachment; filename="${filename}"`,
-      "Content-Length": String(buffer.byteLength),
+      "Content-Length": String(zipBuffer.byteLength),
     },
   });
 }
