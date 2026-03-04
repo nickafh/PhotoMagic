@@ -166,7 +166,7 @@ export default function AdminDashboardPage() {
               </h2>
               <Link
                 href="/admin/submissions"
-                className="text-sm text-amber-600 hover:text-amber-700 dark:text-amber-400 dark:hover:text-amber-300 font-medium"
+                className="text-sm text-gold hover:text-gold/80 font-bold uppercase tracking-wider"
               >
                 View All
               </Link>
@@ -204,7 +204,7 @@ export default function AdminDashboardPage() {
                             {listing.address}
                           </p>
                           {isPendingAdvisor && (
-                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400 shrink-0">
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-gold/10 text-gold border border-gold/30 shrink-0">
                               <span className="material-symbols-outlined text-xs">hourglass_top</span>
                               Advisor
                             </span>
@@ -254,7 +254,7 @@ export default function AdminDashboardPage() {
                               {listing.address}
                             </span>
                             {isPendingAdvisor && (
-                              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400">
+                              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-gold/10 text-gold border border-gold/30">
                                 <span className="material-symbols-outlined text-xs">hourglass_top</span>
                                 Pending Advisor
                               </span>
@@ -276,7 +276,7 @@ export default function AdminDashboardPage() {
                         <td className="px-6 py-4 text-right">
                           <Link
                             href={`/admin/submissions/${listing.id}`}
-                            className="px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white text-sm font-medium rounded-lg transition-colors"
+                            className="px-4 py-2 bg-primary hover:bg-primary/90 text-white text-sm font-medium rounded-lg transition-colors"
                           >
                             Review
                           </Link>

@@ -271,10 +271,10 @@ export default function ReviewSubmissionPage() {
                   {submission && (
                     <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold uppercase tracking-wider ${
                       submission.status === "APPROVED" ? "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400" :
-                      submission.status === "SUBMITTED" && submission.approverRole === "ADVISOR" ? "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400" :
-                      submission.status === "SUBMITTED" ? "bg-slate-100 text-slate-600 dark:bg-slate-700 dark:text-slate-300" :
-                      submission.status === "CHANGES_REQUESTED" ? "bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400" :
-                      "bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300"
+                      submission.status === "SUBMITTED" && submission.approverRole === "ADVISOR" ? "bg-gold/10 text-gold border border-gold/30" :
+                      submission.status === "SUBMITTED" ? "bg-primary/5 text-primary border border-primary/20" :
+                      submission.status === "CHANGES_REQUESTED" ? "bg-gold/10 text-gold border border-gold/30" :
+                      "bg-gray-100 text-text-grey"
                     }`}>
                       {submission.status === "SUBMITTED" && submission.approverRole === "ADVISOR" ? (
                         <><span className="material-symbols-outlined text-xs">hourglass_top</span>Pending Advisor</>
@@ -293,7 +293,7 @@ export default function ReviewSubmissionPage() {
                 href={submission?.id
                   ? `/api/listings/${id}/downloads?submissionId=${submission.id}`
                   : `/api/listings/${id}/downloads`}
-                className="flex items-center gap-2 px-4 py-2.5 bg-slate-200 hover:bg-slate-300 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-700 dark:text-white rounded-lg transition-all font-bold text-sm uppercase tracking-wider"
+                className="flex items-center gap-2 px-4 py-2.5 bg-primary hover:bg-primary/90 text-white rounded-lg transition-all font-bold text-sm uppercase tracking-wider"
               >
                 <span className="material-symbols-outlined">download</span>
                 Download ZIP
@@ -302,7 +302,7 @@ export default function ReviewSubmissionPage() {
               {listing.status === "SUBMITTED" && submission?.status === "SUBMITTED" && submission?.approverRole === "ADVISOR" ? (
                 <button
                   disabled
-                  className="flex items-center gap-2 px-6 py-2.5 bg-slate-200 dark:bg-slate-700 text-slate-500 dark:text-slate-400 font-bold rounded-lg text-sm uppercase tracking-wider cursor-not-allowed"
+                  className="flex items-center gap-2 px-6 py-2.5 border-2 border-gold/40 text-gold bg-gold/5 font-bold rounded-lg text-sm uppercase tracking-wider cursor-not-allowed"
                 >
                   <span className="material-symbols-outlined">hourglass_top</span>
                   Pending Advisor
@@ -328,7 +328,7 @@ export default function ReviewSubmissionPage() {
                         }
                         setShowProposeModal(true);
                       }}
-                      className="flex items-center gap-2 px-4 py-2.5 bg-[#1C2836] hover:bg-[#253444] text-white rounded-lg transition-all font-bold text-sm uppercase tracking-wider disabled:opacity-50"
+                      className="flex items-center gap-2 px-4 py-2.5 bg-primary hover:bg-primary/90 text-white rounded-lg transition-all font-bold text-sm uppercase tracking-wider disabled:opacity-50"
                     >
                       <span className="material-symbols-outlined">send</span>
                       Propose to Advisor
@@ -407,8 +407,8 @@ export default function ReviewSubmissionPage() {
             />
             <div className="relative bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-md">
               <div className="p-6">
-                <div className="w-14 h-14 mx-auto mb-4 rounded-full bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center">
-                  <span className="material-symbols-outlined text-purple-600 dark:text-purple-400 text-3xl">
+                <div className="w-14 h-14 mx-auto mb-4 rounded-full bg-primary/10 flex items-center justify-center">
+                  <span className="material-symbols-outlined text-gold text-3xl">
                     send
                   </span>
                 </div>
@@ -422,7 +422,7 @@ export default function ReviewSubmissionPage() {
                   Select Advisor
                 </label>
                 {selectedAdvisor ? (
-                  <div className="flex items-center gap-2 mb-3 px-3 py-2 bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-700 rounded-lg">
+                  <div className="flex items-center gap-2 mb-3 px-3 py-2 bg-primary/5 border border-primary/20 rounded-lg">
                     <div className="flex-1 min-w-0">
                       <span className="font-medium text-gray-900 dark:text-white">
                         {selectedAdvisor.name || selectedAdvisor.email}
@@ -433,7 +433,7 @@ export default function ReviewSubmissionPage() {
                         </span>
                       )}
                       {selectedAdvisor.id === listing?.userId && (
-                        <span className="ml-2 text-xs text-purple-600 dark:text-purple-400">(listing owner)</span>
+                        <span className="ml-2 text-xs text-gold">(listing owner)</span>
                       )}
                     </div>
                     <button
@@ -459,11 +459,11 @@ export default function ReviewSubmissionPage() {
                         }}
                         placeholder="Search by name or email..."
                         inputMode="search"
-                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 focus:ring-2 focus:ring-primary focus:border-transparent"
                       />
                       {advisorSearchLoading && (
                         <div className="absolute right-3 top-1/2 -translate-y-1/2">
-                          <div className="w-4 h-4 border-2 border-purple-400 border-t-transparent rounded-full animate-spin" />
+                          <div className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin" />
                         </div>
                       )}
                     </div>
@@ -479,12 +479,12 @@ export default function ReviewSubmissionPage() {
                               setAdvisorResults([]);
                               setShowAdvisorDropdown(false);
                             }}
-                            className="w-full text-left px-3 py-2 hover:bg-purple-50 dark:hover:bg-purple-900/20 transition-colors first:rounded-t-lg last:rounded-b-lg"
+                            className="w-full text-left px-3 py-2 hover:bg-primary/5 transition-colors first:rounded-t-lg last:rounded-b-lg"
                           >
                             <div className="font-medium text-gray-900 dark:text-white text-sm">
                               {a.name || a.email}
                               {a.id === listing?.userId && (
-                                <span className="ml-2 text-xs text-purple-600 dark:text-purple-400">(listing owner)</span>
+                                <span className="ml-2 text-xs text-gold">(listing owner)</span>
                               )}
                             </div>
                             {a.name && (
@@ -500,7 +500,7 @@ export default function ReviewSubmissionPage() {
                   value={proposalNote}
                   onChange={(e) => setProposalNote(e.target.value)}
                   placeholder="Add a note (optional)"
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 focus:ring-2 focus:ring-purple-500 focus:border-transparent resize-none"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 focus:ring-2 focus:ring-primary focus:border-transparent resize-none"
                   rows={3}
                 />
               </div>
@@ -515,7 +515,7 @@ export default function ReviewSubmissionPage() {
                 <button
                   onClick={handlePropose}
                   disabled={isProposing || !selectedAdvisor}
-                  className="flex-1 px-4 py-2.5 bg-purple-600 hover:bg-purple-700 text-white font-semibold rounded-lg transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+                  className="flex-1 px-4 py-2.5 bg-primary hover:bg-primary/90 text-white font-semibold rounded-lg transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
                 >
                   {isProposing ? (
                     <>
