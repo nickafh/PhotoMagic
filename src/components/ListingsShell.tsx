@@ -36,7 +36,7 @@ export default function ListingShell({
   }, [authStatus]);
 
   return (
-    <div className="min-h-screen bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100">
+    <div className="h-screen h-[100dvh] overflow-hidden bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 flex flex-col md:block">
       {/* Desktop Sidebar - fixed position, hidden on mobile */}
       <div className="hidden md:block">
         <Sidebar listings={recentListings} />
@@ -46,7 +46,7 @@ export default function ListingShell({
       <MobileHeader title={title} status={status} />
 
       {/* Main content with left margin for fixed sidebar on desktop */}
-      <main className="flex flex-col min-h-screen md:h-screen md:max-h-screen md:overflow-hidden md:ml-64">
+      <main className="flex-1 flex flex-col min-h-0 md:h-screen md:max-h-screen md:overflow-hidden md:ml-64">
         {/* Desktop Topbar - hidden on mobile */}
         <div className="hidden md:block relative z-[1000]">
           <Topbar title={title} />

@@ -20,7 +20,7 @@ export default function MobileHeader({ title, status }: MobileHeaderProps) {
 
   return (
     <>
-      <header className="md:hidden sticky top-0 z-50 bg-primary px-4 py-3.5">
+      <header className="md:hidden shrink-0 z-50 bg-primary px-4 py-3.5">
         {/* Subtle gradient overlay */}
         <div className="absolute inset-0 bg-gradient-to-b from-white/5 to-transparent pointer-events-none" />
 
