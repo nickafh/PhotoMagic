@@ -424,7 +424,7 @@ export default function ListingPage() {
             multiple
             accept="image/*"
             className="hidden"
-            disabled={isUploading}
+            disabled={isUploading || listing.status === "APPROVED"}
             onChange={(e) => {
               uploadFiles(e.target.files);
               e.target.value = "";
@@ -447,25 +447,27 @@ export default function ListingPage() {
           >
             <span className="material-symbols-outlined text-xl">delete</span>
           </button>
-          <button
-            onClick={() => fileInputRef.current?.click()}
-            disabled={isUploading}
-            className="flex items-center gap-2 px-4 py-2.5 bg-slate-200 hover:bg-slate-300 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-700 dark:text-white font-bold rounded-lg transition-all text-sm uppercase tracking-wider disabled:opacity-60 disabled:cursor-not-allowed"
-          >
-            {isUploading ? (
-              <>
-                <span className="material-symbols-outlined text-[18px] animate-spin">
-                  progress_activity
-                </span>
-                {uploadProgress.current}/{uploadProgress.total}
-              </>
-            ) : (
-              <>
-                <span className="material-symbols-outlined text-[18px]">add_photo_alternate</span>
-                Upload
-              </>
-            )}
-          </button>
+          {listing.status !== "APPROVED" && (
+            <button
+              onClick={() => fileInputRef.current?.click()}
+              disabled={isUploading}
+              className="flex items-center gap-2 px-4 py-2.5 bg-slate-200 hover:bg-slate-300 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-700 dark:text-white font-bold rounded-lg transition-all text-sm uppercase tracking-wider disabled:opacity-60 disabled:cursor-not-allowed"
+            >
+              {isUploading ? (
+                <>
+                  <span className="material-symbols-outlined text-[18px] animate-spin">
+                    progress_activity
+                  </span>
+                  {uploadProgress.current}/{uploadProgress.total}
+                </>
+              ) : (
+                <>
+                  <span className="material-symbols-outlined text-[18px]">add_photo_alternate</span>
+                  Upload
+                </>
+              )}
+            </button>
+          )}
           {listing.status === "DRAFT" ? (
             isListingsOrAdmin ? (
               <button
@@ -568,25 +570,27 @@ export default function ListingPage() {
           >
             <span className="material-symbols-outlined text-xl">delete</span>
           </button>
-          <button
-            onClick={() => fileInputRef.current?.click()}
-            disabled={isUploading}
-            className="flex-1 flex items-center justify-center gap-2 bg-[#1C2836] hover:bg-[#253444] text-white py-2.5 px-4 rounded-lg font-bold text-xs tracking-widest transition-colors uppercase disabled:opacity-60 disabled:cursor-not-allowed"
-          >
-            {isUploading ? (
-              <>
-                <span className="material-symbols-outlined text-lg animate-spin">
-                  progress_activity
-                </span>
-                {uploadProgress.current}/{uploadProgress.total}
-              </>
-            ) : (
-              <>
-                <span className="material-symbols-outlined text-lg">add_a_photo</span>
-                Upload
-              </>
-            )}
-          </button>
+          {listing.status !== "APPROVED" && (
+            <button
+              onClick={() => fileInputRef.current?.click()}
+              disabled={isUploading}
+              className="flex-1 flex items-center justify-center gap-2 bg-[#1C2836] hover:bg-[#253444] text-white py-2.5 px-4 rounded-lg font-bold text-xs tracking-widest transition-colors uppercase disabled:opacity-60 disabled:cursor-not-allowed"
+            >
+              {isUploading ? (
+                <>
+                  <span className="material-symbols-outlined text-lg animate-spin">
+                    progress_activity
+                  </span>
+                  {uploadProgress.current}/{uploadProgress.total}
+                </>
+              ) : (
+                <>
+                  <span className="material-symbols-outlined text-lg">add_a_photo</span>
+                  Upload
+                </>
+              )}
+            </button>
+          )}
           {listing.status === "DRAFT" ? (
             isListingsOrAdmin ? (
               <button
@@ -735,7 +739,7 @@ export default function ListingPage() {
         listingId={listing.id}
         photoIds={listing.photoIds ?? []}
         photos={listing.photos ?? {}}
-        onRestore={togglePhotoExclude}
+        onRestore={listing.status !== "APPROVED" ? togglePhotoExclude : undefined}
       />
 
       {showSubmitModal && (

@@ -34,6 +34,10 @@ export async function POST(req: Request, ctx: Ctx) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
+  if (listingWithUser.status === "APPROVED") {
+    return NextResponse.json({ error: "Cannot upload photos to an approved listing" }, { status: 403 });
+  }
+
   try {
     const form = await req.formData();
     const files = form.getAll("files");

@@ -104,6 +104,10 @@ export async function PATCH(req: Request, ctx: Ctx) {
     }
   }
 
+  if (listingWithUser.status === "APPROVED") {
+    return NextResponse.json({ error: "Cannot modify photos on an approved listing" }, { status: 403 });
+  }
+
   const photo = await togglePhotoExcluded(listingId, photoId);
 
   if (!photo) {
