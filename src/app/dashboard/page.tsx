@@ -81,13 +81,13 @@ export default function DashboardPage() {
         </button>
       }
     >
-      <div className="p-3 md:p-8">
-        <div className="flex items-center justify-between mb-6 md:mb-8">
+      <div className="md:p-8">
+        <div className="flex items-center justify-between mb-4 md:mb-8">
           <div>
-            <h1 className="text-2xl font-display font-bold text-gray-900 dark:text-white tracking-tight">
+            <h1 className="hidden md:block text-2xl font-display font-bold text-gray-900 dark:text-white tracking-tight">
               My Listings
             </h1>
-            <p className="text-gray-500 dark:text-gray-400 mt-1">
+            <p className="text-gray-500 dark:text-gray-400 md:mt-1">
               {listings.length === 0
                 ? "Create your first listing to get started"
                 : `${listings.length} listing${listings.length !== 1 ? "s" : ""}`}
@@ -125,6 +125,16 @@ export default function DashboardPage() {
           </div>
         )}
       </div>
+
+      {/* Mobile FAB */}
+      <button
+        type="button"
+        onClick={() => setShowCreateModal(true)}
+        className="md:hidden fixed bottom-20 right-4 z-40 w-14 h-14 bg-amber-600 hover:bg-amber-700 active:bg-amber-800 text-white rounded-full shadow-lg shadow-amber-600/30 flex items-center justify-center transition-colors"
+        aria-label="Create listing"
+      >
+        <span className="material-symbols-outlined text-2xl">add</span>
+      </button>
 
       {showCreateModal && (
         <CreateListingModal

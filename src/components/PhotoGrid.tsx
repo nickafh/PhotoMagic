@@ -152,7 +152,7 @@ export default function PhotoGrid({
       onDragCancel={handleDragCancel}
     >
       <SortableContext items={localIds} strategy={rectSortingStrategy}>
-        <div className="grid grid-cols-4 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-1 md:gap-4 stagger-children">
+        <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-1.5 md:gap-4 stagger-children">
           {localIds.map((id, idx) => (
             <SortableTile
               key={id}

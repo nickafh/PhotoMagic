@@ -75,55 +75,55 @@ export default function AdminDashboardPage() {
         </div>
 
         {/* Stats Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-            <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 bg-amber-100 dark:bg-amber-900/30 rounded-lg flex items-center justify-center">
-                  <span className="material-symbols-outlined text-2xl text-amber-600">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-6 mb-8">
+            <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-4 md:p-6">
+              <div className="flex flex-col md:flex-row md:items-center gap-2 md:gap-4">
+                <div className="w-10 h-10 md:w-12 md:h-12 bg-amber-100 dark:bg-amber-900/30 rounded-lg flex items-center justify-center shrink-0">
+                  <span className="material-symbols-outlined text-xl md:text-2xl text-amber-600">
                     pending
                   </span>
                 </div>
                 <div>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">
-                    Pending Review
+                  <p className="text-xs md:text-sm text-gray-500 dark:text-gray-400">
+                    Pending
                   </p>
-                  <p className="text-2xl font-bold text-gray-900 dark:text-white">
+                  <p className="text-xl md:text-2xl font-bold text-gray-900 dark:text-white">
                     {loading ? "-" : stats.pending}
                   </p>
                 </div>
               </div>
             </div>
 
-            <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 bg-green-100 dark:bg-green-900/30 rounded-lg flex items-center justify-center">
-                  <span className="material-symbols-outlined text-2xl text-green-600">
+            <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-4 md:p-6">
+              <div className="flex flex-col md:flex-row md:items-center gap-2 md:gap-4">
+                <div className="w-10 h-10 md:w-12 md:h-12 bg-green-100 dark:bg-green-900/30 rounded-lg flex items-center justify-center shrink-0">
+                  <span className="material-symbols-outlined text-xl md:text-2xl text-green-600">
                     check_circle
                   </span>
                 </div>
                 <div>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">
+                  <p className="text-xs md:text-sm text-gray-500 dark:text-gray-400">
                     Approved
                   </p>
-                  <p className="text-2xl font-bold text-gray-900 dark:text-white">
+                  <p className="text-xl md:text-2xl font-bold text-gray-900 dark:text-white">
                     {loading ? "-" : stats.approved}
                   </p>
                 </div>
               </div>
             </div>
 
-            <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center">
-                  <span className="material-symbols-outlined text-2xl text-blue-600">
+            <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-4 md:p-6">
+              <div className="flex flex-col md:flex-row md:items-center gap-2 md:gap-4">
+                <div className="w-10 h-10 md:w-12 md:h-12 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center shrink-0">
+                  <span className="material-symbols-outlined text-xl md:text-2xl text-blue-600">
                     photo_library
                   </span>
                 </div>
                 <div>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">
-                    Total Listings
+                  <p className="text-xs md:text-sm text-gray-500 dark:text-gray-400">
+                    Total
                   </p>
-                  <p className="text-2xl font-bold text-gray-900 dark:text-white">
+                  <p className="text-xl md:text-2xl font-bold text-gray-900 dark:text-white">
                     {loading ? "-" : stats.total}
                   </p>
                 </div>
@@ -133,19 +133,19 @@ export default function AdminDashboardPage() {
             {user?.role === "ADMIN" && (
               <Link
                 href="/admin/users"
-                className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6 hover:border-purple-300 dark:hover:border-purple-600 transition-colors group"
+                className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-4 md:p-6 hover:border-purple-300 dark:hover:border-purple-600 transition-colors group cursor-pointer"
               >
-                <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 bg-purple-100 dark:bg-purple-900/30 rounded-lg flex items-center justify-center group-hover:bg-purple-200 dark:group-hover:bg-purple-900/50 transition-colors">
-                    <span className="material-symbols-outlined text-2xl text-purple-600">
+                <div className="flex flex-col md:flex-row md:items-center gap-2 md:gap-4">
+                  <div className="w-10 h-10 md:w-12 md:h-12 bg-purple-100 dark:bg-purple-900/30 rounded-lg flex items-center justify-center group-hover:bg-purple-200 dark:group-hover:bg-purple-900/50 transition-colors shrink-0">
+                    <span className="material-symbols-outlined text-xl md:text-2xl text-purple-600">
                       group
                     </span>
                   </div>
                   <div>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">
+                    <p className="text-xs md:text-sm text-gray-500 dark:text-gray-400">
                       Users
                     </p>
-                    <p className="text-2xl font-bold text-gray-900 dark:text-white">
+                    <p className="text-xl md:text-2xl font-bold text-gray-900 dark:text-white">
                       {loading ? "-" : stats.users}
                     </p>
                   </div>
@@ -182,7 +182,30 @@ export default function AdminDashboardPage() {
                 </p>
               </div>
             ) : (
-              <table className="w-full">
+              <>
+              {/* Mobile: Card layout */}
+              <div className="md:hidden divide-y divide-gray-200 dark:divide-gray-700">
+                {pendingListings.map((listing) => (
+                  <Link
+                    key={listing.id}
+                    href={`/admin/submissions/${listing.id}`}
+                    className="flex items-center gap-3 px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-700/50 active:bg-gray-100 dark:active:bg-gray-700 transition-colors cursor-pointer"
+                  >
+                    <div className="flex-1 min-w-0">
+                      <p className="font-medium text-gray-900 dark:text-white truncate">
+                        {listing.address}
+                      </p>
+                      <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">
+                        {listing.user?.name || listing.user?.email || "Unknown"} &middot; {listing.photos.filter((p) => !p.excluded).length} photos &middot; {new Date(listing.updatedAt).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
+                      </p>
+                    </div>
+                    <span className="material-symbols-outlined text-gray-400 text-xl shrink-0">chevron_right</span>
+                  </Link>
+                ))}
+              </div>
+
+              {/* Desktop: Table layout */}
+              <table className="w-full hidden md:table">
                 <thead>
                   <tr className="border-b border-gray-200 dark:border-gray-700">
                     <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
@@ -235,6 +258,7 @@ export default function AdminDashboardPage() {
                   ))}
                 </tbody>
               </table>
+              </>
             )}
           </div>
         </div>
