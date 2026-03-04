@@ -407,6 +407,7 @@ export default function ListingPage() {
 
   const canSubmit = listing.status === "DRAFT" && activePhotoCount > 0;
   const isListingsOrAdmin = isListingsTeamOrAdmin(session as any);
+  const pendingAdvisorApproval = submission?.status === "SUBMITTED" && submission?.approverRole === "ADVISOR";
 
   return (
     <ListingShell
@@ -504,7 +505,7 @@ export default function ListingPage() {
                 Submit for Review
               </button>
             )
-          ) : listing.status === "SUBMITTED" && isListingsOrAdmin ? (
+          ) : listing.status === "SUBMITTED" && isListingsOrAdmin && !pendingAdvisorApproval ? (
             <>
               {submission?.initiatorRole !== "ADVISOR" && (
                 <button
@@ -544,8 +545,10 @@ export default function ListingPage() {
               disabled
               className="flex items-center gap-2 px-6 py-2.5 bg-slate-200 dark:bg-slate-700 text-slate-500 dark:text-slate-400 font-semibold rounded-lg text-sm uppercase tracking-wider cursor-not-allowed"
             >
-              <span className="material-symbols-outlined text-[18px]">check_circle</span>
-              {listing.status === "SUBMITTED" ? "Pending Review" : "Approved"}
+              <span className="material-symbols-outlined text-[18px]">
+                {pendingAdvisorApproval ? "hourglass_top" : "check_circle"}
+              </span>
+              {pendingAdvisorApproval ? "Pending Advisor" : listing.status === "SUBMITTED" ? "Pending Review" : "Approved"}
             </button>
           )}
         </div>
@@ -627,7 +630,7 @@ export default function ListingPage() {
                 Submit
               </button>
             )
-          ) : listing.status === "SUBMITTED" && isListingsOrAdmin ? (
+          ) : listing.status === "SUBMITTED" && isListingsOrAdmin && !pendingAdvisorApproval ? (
             <>
               {submission?.initiatorRole !== "ADVISOR" && (
                 <button
@@ -667,8 +670,10 @@ export default function ListingPage() {
               disabled
               className="flex-1 flex items-center justify-center gap-2 bg-slate-200 dark:bg-slate-700/50 text-slate-500 dark:text-slate-400 py-2.5 px-4 rounded-lg font-semibold text-xs tracking-widest uppercase cursor-not-allowed"
             >
-              <span className="material-symbols-outlined text-lg">check_circle</span>
-              {listing.status === "SUBMITTED" ? "Pending" : "Approved"}
+              <span className="material-symbols-outlined text-lg">
+                {pendingAdvisorApproval ? "hourglass_top" : "check_circle"}
+              </span>
+              {pendingAdvisorApproval ? "Pending Advisor" : listing.status === "SUBMITTED" ? "Pending" : "Approved"}
             </button>
           )}
         </div>
