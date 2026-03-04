@@ -353,9 +353,16 @@ export default function ListingPage() {
       return isOwner;
     }
 
-    // SUBMITTED: Only LISTINGS or ADMIN can reorder
-    return hasPermission(role, "listing:reorder_submitted");
-  }, [session, listing]);
+    // SUBMITTED: LISTINGS/ADMIN can always reorder
+    if (hasPermission(role, "listing:reorder_submitted")) return true;
+
+    // SUBMITTED: Advisor can reorder if they are the approver on the proposal
+    if (role === "ADVISOR" && submission?.approverRole === "ADVISOR" && submission?.status === "SUBMITTED") {
+      return true;
+    }
+
+    return false;
+  }, [session, listing, submission]);
 
   const canDownload = useMemo(() => {
     if (!session?.user || !listing) return false;
@@ -648,7 +655,7 @@ export default function ListingPage() {
         photoIds={listing.photoIds ?? []}
         photos={listing.photos ?? {}}
         onReorder={canReorder ? saveOrder : undefined}
-        onToggleExclude={listing.status === "DRAFT" ? togglePhotoExclude : undefined}
+        onToggleExclude={canReorder ? togglePhotoExclude : undefined}
       />
 
       <ExcludedPhotosSection
