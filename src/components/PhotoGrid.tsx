@@ -219,13 +219,18 @@ const SortableTile = memo(function SortableTile({
     userSelect: "none",
   };
 
+  // Only attach drag listeners when reordering is enabled (onExclude is set alongside onReorder)
+  const canDrag = !!onExclude;
+
   return (
     <div
       ref={setNodeRef}
       style={style}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
-      className="group relative"
+      className={`group relative ${canDrag ? "cursor-grab active:cursor-grabbing" : ""}`}
+      {...(canDrag ? attributes : {})}
+      {...(canDrag ? listeners : {})}
     >
       {/* Exclude button - always visible on mobile, hover-reveal on desktop */}
       {onExclude && (
@@ -253,13 +258,6 @@ const SortableTile = memo(function SortableTile({
         </button>
       )}
 
-      {/* Drag target: entire tile. Mouse: 5px drag distance. Touch: 200ms long-press. */}
-      <div
-        className="absolute inset-0 z-10 cursor-grab active:cursor-grabbing"
-        aria-label={isMobile ? "Hold to drag and reorder" : "Drag to reorder photo"}
-        {...attributes}
-        {...listeners}
-      />
       <div
         className={`
           photo-tile
