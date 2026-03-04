@@ -204,7 +204,7 @@ export default function AdminDashboardPage() {
                             {listing.address}
                           </p>
                           {isPendingAdvisor && (
-                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400 shrink-0">
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400 shrink-0">
                               <span className="material-symbols-outlined text-xs">hourglass_top</span>
                               Advisor
                             </span>
@@ -254,7 +254,7 @@ export default function AdminDashboardPage() {
                               {listing.address}
                             </span>
                             {isPendingAdvisor && (
-                              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400">
+                              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400">
                                 <span className="material-symbols-outlined text-xs">hourglass_top</span>
                                 Pending Advisor
                               </span>

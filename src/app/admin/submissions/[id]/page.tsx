@@ -269,13 +269,16 @@ export default function ReviewSubmissionPage() {
                   </h1>
                   <StatusBadge status={listing.status} size="md" />
                   {submission && (
-                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                    <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold uppercase tracking-wider ${
                       submission.status === "APPROVED" ? "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400" :
-                      submission.status === "SUBMITTED" ? "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400" :
+                      submission.status === "SUBMITTED" && submission.approverRole === "ADVISOR" ? "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400" :
+                      submission.status === "SUBMITTED" ? "bg-slate-100 text-slate-600 dark:bg-slate-700 dark:text-slate-300" :
                       submission.status === "CHANGES_REQUESTED" ? "bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400" :
                       "bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300"
                     }`}>
-                      {submission.status === "CHANGES_REQUESTED" ? "Changes Requested" : submission.status}
+                      {submission.status === "SUBMITTED" && submission.approverRole === "ADVISOR" ? (
+                        <><span className="material-symbols-outlined text-xs">hourglass_top</span>Pending Advisor</>
+                      ) : submission.status === "CHANGES_REQUESTED" ? "Changes Requested" : submission.status === "SUBMITTED" ? "Needs Review" : submission.status}
                     </span>
                   )}
                 </div>
@@ -290,7 +293,7 @@ export default function ReviewSubmissionPage() {
                 href={submission?.id
                   ? `/api/listings/${id}/downloads?submissionId=${submission.id}`
                   : `/api/listings/${id}/downloads`}
-                className="flex items-center gap-2 px-4 py-2.5 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors font-medium"
+                className="flex items-center gap-2 px-4 py-2.5 bg-slate-200 hover:bg-slate-300 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-700 dark:text-white rounded-lg transition-all font-bold text-sm uppercase tracking-wider"
               >
                 <span className="material-symbols-outlined">download</span>
                 Download ZIP
@@ -299,7 +302,7 @@ export default function ReviewSubmissionPage() {
               {listing.status === "SUBMITTED" && submission?.status === "SUBMITTED" && submission?.approverRole === "ADVISOR" ? (
                 <button
                   disabled
-                  className="flex items-center gap-2 px-6 py-2.5 bg-slate-200 dark:bg-slate-700 text-slate-500 dark:text-slate-400 font-semibold rounded-lg text-sm uppercase tracking-wider cursor-not-allowed"
+                  className="flex items-center gap-2 px-6 py-2.5 bg-slate-200 dark:bg-slate-700 text-slate-500 dark:text-slate-400 font-bold rounded-lg text-sm uppercase tracking-wider cursor-not-allowed"
                 >
                   <span className="material-symbols-outlined">hourglass_top</span>
                   Pending Advisor
@@ -325,7 +328,7 @@ export default function ReviewSubmissionPage() {
                         }
                         setShowProposeModal(true);
                       }}
-                      className="flex items-center gap-2 px-4 py-2.5 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors font-medium disabled:opacity-50"
+                      className="flex items-center gap-2 px-4 py-2.5 bg-[#1C2836] hover:bg-[#253444] text-white rounded-lg transition-all font-bold text-sm uppercase tracking-wider disabled:opacity-50"
                     >
                       <span className="material-symbols-outlined">send</span>
                       Propose to Advisor
@@ -334,7 +337,7 @@ export default function ReviewSubmissionPage() {
 
                   <button
                     onClick={() => setShowApproveModal(true)}
-                    className="flex items-center gap-2 px-6 py-2.5 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors font-medium"
+                    className="flex items-center gap-2 px-6 py-2.5 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-all font-bold text-sm uppercase tracking-wider"
                   >
                     <span className="material-symbols-outlined">check_circle</span>
                     Approve

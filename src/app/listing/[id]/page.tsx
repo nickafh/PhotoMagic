@@ -434,7 +434,7 @@ export default function ListingPage() {
           {canDownload && (
             <a
               href={`/api/listings/${id}/downloads`}
-              className="flex items-center gap-2 px-4 py-2.5 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors font-medium text-sm"
+              className="flex items-center gap-2 px-4 py-2.5 bg-slate-200 hover:bg-slate-300 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-700 dark:text-white rounded-lg transition-all font-bold text-sm uppercase tracking-wider"
             >
               <span className="material-symbols-outlined text-[18px]">download</span>
               Download ZIP
@@ -490,7 +490,7 @@ export default function ListingPage() {
                   setShowProposeModal(true);
                 }}
                 disabled={!canSubmit}
-                className="flex items-center gap-2 px-6 py-2.5 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors font-medium text-sm uppercase tracking-wider disabled:opacity-50"
+                className="flex items-center gap-2 px-6 py-2.5 bg-[#1C2836] hover:bg-[#253444] text-white rounded-lg transition-all font-bold text-sm uppercase tracking-wider disabled:opacity-50"
               >
                 <span className="material-symbols-outlined text-[18px]">send</span>
                 Propose to Advisor
@@ -526,7 +526,7 @@ export default function ListingPage() {
                     }
                     setShowProposeModal(true);
                   }}
-                  className="flex items-center gap-2 px-4 py-2.5 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors font-medium text-sm uppercase tracking-wider"
+                  className="flex items-center gap-2 px-4 py-2.5 bg-[#1C2836] hover:bg-[#253444] text-white rounded-lg transition-all font-bold text-sm uppercase tracking-wider"
                 >
                   <span className="material-symbols-outlined text-[18px]">send</span>
                   Propose to Advisor
@@ -534,7 +534,7 @@ export default function ListingPage() {
               )}
               <button
                 onClick={() => setShowApproveModal(true)}
-                className="flex items-center gap-2 px-6 py-2.5 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors font-medium text-sm uppercase tracking-wider"
+                className="flex items-center gap-2 px-6 py-2.5 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-all font-bold text-sm uppercase tracking-wider"
               >
                 <span className="material-symbols-outlined text-[18px]">check_circle</span>
                 Approve
@@ -543,7 +543,7 @@ export default function ListingPage() {
           ) : (
             <button
               disabled
-              className="flex items-center gap-2 px-6 py-2.5 bg-slate-200 dark:bg-slate-700 text-slate-500 dark:text-slate-400 font-semibold rounded-lg text-sm uppercase tracking-wider cursor-not-allowed"
+              className="flex items-center gap-2 px-6 py-2.5 bg-slate-200 dark:bg-slate-700 text-slate-500 dark:text-slate-400 font-bold rounded-lg text-sm uppercase tracking-wider cursor-not-allowed"
             >
               <span className="material-symbols-outlined text-[18px]">
                 {pendingAdvisorApproval ? "hourglass_top" : "check_circle"}
@@ -615,7 +615,7 @@ export default function ListingPage() {
                   setShowProposeModal(true);
                 }}
                 disabled={!canSubmit}
-                className="flex-1 flex items-center justify-center gap-2 bg-purple-600 hover:bg-purple-700 text-white py-2.5 px-4 rounded-lg font-medium text-xs tracking-widest uppercase disabled:opacity-50"
+                className="flex-1 flex items-center justify-center gap-2 bg-[#1C2836] hover:bg-[#253444] text-white py-2.5 px-4 rounded-lg font-bold text-xs tracking-widest uppercase disabled:opacity-50"
               >
                 <span className="material-symbols-outlined text-lg">send</span>
                 Propose
@@ -651,7 +651,7 @@ export default function ListingPage() {
                     }
                     setShowProposeModal(true);
                   }}
-                  className="flex-1 flex items-center justify-center gap-2 bg-purple-600 hover:bg-purple-700 text-white py-2.5 px-4 rounded-lg font-medium text-xs tracking-widest uppercase"
+                  className="flex-1 flex items-center justify-center gap-2 bg-[#1C2836] hover:bg-[#253444] text-white py-2.5 px-4 rounded-lg font-bold text-xs tracking-widest uppercase"
                 >
                   <span className="material-symbols-outlined text-lg">send</span>
                   Propose
@@ -659,7 +659,7 @@ export default function ListingPage() {
               )}
               <button
                 onClick={() => setShowApproveModal(true)}
-                className="flex-1 flex items-center justify-center gap-2 bg-green-600 hover:bg-green-700 text-white py-2.5 px-4 rounded-lg font-medium text-xs tracking-widest uppercase"
+                className="flex-1 flex items-center justify-center gap-2 bg-green-600 hover:bg-green-700 text-white py-2.5 px-4 rounded-lg font-bold text-xs tracking-widest uppercase"
               >
                 <span className="material-symbols-outlined text-lg">check_circle</span>
                 Approve
