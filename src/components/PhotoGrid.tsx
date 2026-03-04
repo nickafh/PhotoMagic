@@ -219,7 +219,6 @@ const SortableTile = memo(function SortableTile({
     userSelect: "none",
   };
 
-  // Only attach drag listeners when reordering is enabled (onExclude is set alongside onReorder)
   const canDrag = !!onExclude;
 
   return (
@@ -228,9 +227,10 @@ const SortableTile = memo(function SortableTile({
       style={style}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
-      className={`group relative ${canDrag ? "cursor-grab active:cursor-grabbing" : ""}`}
-      {...(canDrag ? attributes : {})}
-      {...(canDrag ? listeners : {})}
+      className="group relative"
+      // Mobile: listeners on entire tile (long-press to drag, swipe to scroll)
+      {...(canDrag && isMobile ? attributes : {})}
+      {...(canDrag && isMobile ? listeners : {})}
     >
       {/* Exclude button - always visible on mobile, hover-reveal on desktop */}
       {onExclude && (
@@ -256,6 +256,19 @@ const SortableTile = memo(function SortableTile({
         >
           <span className="material-symbols-outlined text-white text-xs md:text-base">close</span>
         </button>
+      )}
+
+      {/* Desktop: drag handle overlay — only covers tile on hover so scroll works elsewhere */}
+      {canDrag && !isMobile && (
+        <div
+          className={`
+            absolute inset-0 z-10 cursor-grab active:cursor-grabbing
+            transition-opacity duration-150
+            ${isHovered ? "opacity-100" : "opacity-0 pointer-events-none"}
+          `}
+          {...attributes}
+          {...listeners}
+        />
       )}
 
       <div
