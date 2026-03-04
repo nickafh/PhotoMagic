@@ -75,16 +75,22 @@ export async function POST(req: Request, ctx: Ctx) {
           await sendEmail({ to: owner.email, subject, body: emailBody });
         }
       } else {
-        // Listings submitted, advisor approved → email listings team
+        // Listings/Admin submitted, advisor approved → email the proposer and listings team
+        const { subject, body: emailBody } = buildApprovalEmail({
+          listingAddress: listingWithUser.address,
+          listingId: id,
+          approverName: user.name || "Advisor",
+          photoCount: activePhotoCount,
+          baseUrl,
+        });
+
+        const proposer = await getUserById(submission.submittedByUserId);
+        if (proposer?.email) {
+          await sendEmail({ to: proposer.email, subject, body: emailBody });
+        }
+
         const listingsTeamEmail = process.env.LISTINGS_TEAM_EMAIL;
-        if (listingsTeamEmail) {
-          const { subject, body: emailBody } = buildApprovalEmail({
-            listingAddress: listingWithUser.address,
-            listingId: id,
-            approverName: user.name || "Advisor",
-            photoCount: activePhotoCount,
-            baseUrl,
-          });
+        if (listingsTeamEmail && listingsTeamEmail !== proposer?.email) {
           await sendEmail({ to: listingsTeamEmail, subject, body: emailBody });
         }
       }
