@@ -589,16 +589,27 @@ export async function getLatestSubmissionForListing(
 
 export async function approveSubmission(
   id: string,
-  approvedByUserId: string
+  approvedByUserId: string,
+  note?: string
 ): Promise<PhotoOrderSubmissionData> {
+  const submissionData: { status: "APPROVED"; approvedByUserId: string; approvedAt: Date; note?: string } = {
+    status: "APPROVED",
+    approvedByUserId,
+    approvedAt: new Date(),
+  };
+  if (note !== undefined) submissionData.note = note;
+
   const record = await prisma.photoOrderSubmission.update({
     where: { id },
-    data: {
-      status: "APPROVED",
-      approvedByUserId,
-      approvedAt: new Date(),
-    },
+    data: submissionData,
   });
+
+  // Also update the listing status to APPROVED
+  await prisma.listing.update({
+    where: { id: record.listingId },
+    data: { status: "APPROVED" },
+  });
+
   return toSubmissionData(record);
 }
 

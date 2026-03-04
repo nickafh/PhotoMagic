@@ -112,7 +112,6 @@ export default function ReviewSubmissionPage() {
     setIsApproving(true);
     try {
       if (submission && submission.status === "SUBMITTED") {
-        // Approve via submission endpoint
         const res = await fetch(`/api/listings/${id}/approve`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -123,20 +122,9 @@ export default function ReviewSubmissionPage() {
           toast.error("Failed to approve submission");
           return;
         }
-      }
 
-      // Also update listing status to APPROVED
-      const res = await fetch(`/api/listings/${id}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ status: "APPROVED" }),
-      });
-
-      if (res.ok) {
         await fetchListing();
         toast.success("Listing approved.");
-      } else {
-        toast.error("Failed to approve listing");
       }
     } catch (error) {
       console.error("Approve error:", error);

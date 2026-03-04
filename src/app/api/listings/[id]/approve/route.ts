@@ -23,7 +23,7 @@ export async function POST(req: Request, ctx: Ctx) {
 
   const id = await getId(ctx);
   const body = await req.json();
-  const { submissionId } = body as { submissionId: string };
+  const { submissionId, note } = body as { submissionId: string; note?: string };
 
   if (!submissionId) {
     return NextResponse.json({ error: "submissionId is required" }, { status: 400 });
@@ -52,7 +52,7 @@ export async function POST(req: Request, ctx: Ctx) {
     return NextResponse.json({ error: "You are not authorized to approve this submission" }, { status: 403 });
   }
 
-  const approved = await approveSubmission(submissionId, user.id);
+  const approved = await approveSubmission(submissionId, user.id, note);
 
   // Send notification to the initiator
   try {

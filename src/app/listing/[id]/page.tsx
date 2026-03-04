@@ -26,7 +26,8 @@ export default function ListingPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [isApprovingProposal, setIsApprovingProposal] = useState(false);
-  const [isRequestingChanges, setIsRequestingChanges] = useState(false);
+  const [showApproveModal, setShowApproveModal] = useState(false);
+  const [approveNote, setApproveNote] = useState("");
   const [uploadProgress, setUploadProgress] = useState<{ current: number; total: number } | null>(
     null
   );
@@ -235,40 +236,20 @@ export default function ListingPage() {
       const res = await fetch(`/api/listings/${id}/approve`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ submissionId: submission.id }),
+        body: JSON.stringify({ submissionId: submission.id, note: approveNote || undefined }),
       });
 
       if (!res.ok) throw new Error("Failed to approve proposal");
 
       await refresh();
-      toast.success("Proposal approved.");
+      setShowApproveModal(false);
+      setApproveNote("");
+      toast.success("Proposal approved. This order will be used for your listing.");
     } catch (error) {
       console.error("Approve proposal error:", error);
       toast.error("Failed to approve proposal.");
     } finally {
       setIsApprovingProposal(false);
-    }
-  }
-
-  async function handleRequestChanges() {
-    if (!submission) return;
-    setIsRequestingChanges(true);
-    try {
-      const res = await fetch(`/api/listings/${id}/request-changes`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ submissionId: submission.id }),
-      });
-
-      if (!res.ok) throw new Error("Failed to request changes");
-
-      await refresh();
-      toast.success("Changes requested.");
-    } catch (error) {
-      console.error("Request changes error:", error);
-      toast.error("Failed to request changes.");
-    } finally {
-      setIsRequestingChanges(false);
     }
   }
 
@@ -652,18 +633,10 @@ export default function ListingPage() {
             </div>
             <div className="flex items-center gap-2 shrink-0">
               <button
-                onClick={handleRequestChanges}
-                disabled={isRequestingChanges}
-                className="px-4 py-2 text-sm font-medium text-amber-700 dark:text-amber-300 border border-amber-300 dark:border-amber-700 rounded-lg hover:bg-amber-50 dark:hover:bg-amber-900/20 transition-colors disabled:opacity-50"
+                onClick={() => setShowApproveModal(true)}
+                className="px-4 py-2 text-sm font-medium text-white bg-green-600 hover:bg-green-700 rounded-lg transition-colors"
               >
-                {isRequestingChanges ? "Requesting..." : "Request Changes"}
-              </button>
-              <button
-                onClick={handleApproveProposal}
-                disabled={isApprovingProposal}
-                className="px-4 py-2 text-sm font-medium text-white bg-green-600 hover:bg-green-700 rounded-lg transition-colors disabled:opacity-50"
-              >
-                {isApprovingProposal ? "Approving..." : "Approve Proposal"}
+                Approve Proposal
               </button>
             </div>
           </div>
@@ -828,6 +801,59 @@ export default function ListingPage() {
                   </>
                 ) : (
                   "Send Proposal"
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      {showApproveModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div
+            className="absolute inset-0 bg-black/60 backdrop-blur-sm animate-fade-in"
+            onClick={() => setShowApproveModal(false)}
+          />
+          <div className="relative bg-white dark:bg-slate-800 rounded-2xl shadow-2xl w-full max-w-md animate-scale-in">
+            <div className="p-6">
+              <div className="w-14 h-14 mx-auto mb-4 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
+                <span className="material-symbols-outlined text-green-600 dark:text-green-400 text-3xl">
+                  check_circle
+                </span>
+              </div>
+              <h3 className="text-xl font-display font-semibold text-center text-slate-900 dark:text-white mb-2">
+                Approve Photo Order
+              </h3>
+              <p className="text-center text-slate-600 dark:text-slate-300 mb-4">
+                Once you approve, this is finalized and this order will be used for your listing.
+              </p>
+              <textarea
+                value={approveNote}
+                onChange={(e) => setApproveNote(e.target.value)}
+                placeholder="Add a note (optional)"
+                className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-white placeholder-slate-400 focus:ring-2 focus:ring-green-500 focus:border-transparent resize-none"
+                rows={3}
+              />
+            </div>
+            <div className="flex gap-3 p-4 border-t border-slate-200 dark:border-slate-700">
+              <button
+                onClick={() => setShowApproveModal(false)}
+                disabled={isApprovingProposal}
+                className="flex-1 px-4 py-2.5 text-slate-700 dark:text-slate-300 font-semibold rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors disabled:opacity-50"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleApproveProposal}
+                disabled={isApprovingProposal}
+                className="flex-1 px-4 py-2.5 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-lg transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+              >
+                {isApprovingProposal ? (
+                  <>
+                    <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    Approving...
+                  </>
+                ) : (
+                  "Approve"
                 )}
               </button>
             </div>
