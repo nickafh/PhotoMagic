@@ -298,38 +298,31 @@ export default function ReviewSubmissionPage() {
 
               {listing.status === "SUBMITTED" && (
                 <>
-                  <button
-                    onClick={() => setShowChangesModal(true)}
-                    className="flex items-center gap-2 px-4 py-2.5 border border-amber-300 dark:border-amber-600 text-amber-700 dark:text-amber-300 rounded-lg hover:bg-amber-50 dark:hover:bg-amber-900/20 transition-colors font-medium"
-                  >
-                    <span className="material-symbols-outlined">edit_note</span>
-                    Request Changes
-                  </button>
-
-                  <button
-                    onClick={async () => {
-                      // Pre-select the listing owner if they're an advisor
-                      setSelectedAdvisor(null);
-                      setAdvisorSearch("");
-                      setAdvisorResults([]);
-                      if (listing?.userId) {
-                        try {
-                          const res = await fetch(`/api/users/${listing.userId}`);
-                          if (res.ok) {
-                            const owner = await res.json();
-                            if (owner.role === "ADVISOR") {
-                              setSelectedAdvisor({ id: owner.id, email: owner.email, name: owner.name });
+                  {submission?.initiatorRole !== "ADVISOR" && (
+                    <button
+                      onClick={async () => {
+                        setSelectedAdvisor(null);
+                        setAdvisorSearch("");
+                        setAdvisorResults([]);
+                        if (listing?.userId) {
+                          try {
+                            const res = await fetch(`/api/users/${listing.userId}`);
+                            if (res.ok) {
+                              const owner = await res.json();
+                              if (owner.role === "ADVISOR") {
+                                setSelectedAdvisor({ id: owner.id, email: owner.email, name: owner.name });
+                              }
                             }
-                          }
-                        } catch {}
-                      }
-                      setShowProposeModal(true);
-                    }}
-                    className="flex items-center gap-2 px-4 py-2.5 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors font-medium disabled:opacity-50"
-                  >
-                    <span className="material-symbols-outlined">send</span>
-                    Propose to Advisor
-                  </button>
+                          } catch {}
+                        }
+                        setShowProposeModal(true);
+                      }}
+                      className="flex items-center gap-2 px-4 py-2.5 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors font-medium disabled:opacity-50"
+                    >
+                      <span className="material-symbols-outlined">send</span>
+                      Propose to Advisor
+                    </button>
+                  )}
 
                   <button
                     onClick={() => setShowApproveModal(true)}

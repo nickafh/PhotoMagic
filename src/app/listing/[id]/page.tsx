@@ -503,29 +503,31 @@ export default function ListingPage() {
             )
           ) : listing.status === "SUBMITTED" && isListingsOrAdmin ? (
             <>
-              <button
-                onClick={async () => {
-                  setSelectedAdvisor(null);
-                  setAdvisorSearch("");
-                  setAdvisorResults([]);
-                  if (listing?.userId) {
-                    try {
-                      const res = await fetch(`/api/users/${listing.userId}`);
-                      if (res.ok) {
-                        const owner = await res.json();
-                        if (owner.role === "ADVISOR") {
-                          setSelectedAdvisor({ id: owner.id, email: owner.email, name: owner.name });
+              {submission?.initiatorRole !== "ADVISOR" && (
+                <button
+                  onClick={async () => {
+                    setSelectedAdvisor(null);
+                    setAdvisorSearch("");
+                    setAdvisorResults([]);
+                    if (listing?.userId) {
+                      try {
+                        const res = await fetch(`/api/users/${listing.userId}`);
+                        if (res.ok) {
+                          const owner = await res.json();
+                          if (owner.role === "ADVISOR") {
+                            setSelectedAdvisor({ id: owner.id, email: owner.email, name: owner.name });
+                          }
                         }
-                      }
-                    } catch {}
-                  }
-                  setShowProposeModal(true);
-                }}
-                className="flex items-center gap-2 px-4 py-2.5 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors font-medium text-sm uppercase tracking-wider"
-              >
-                <span className="material-symbols-outlined text-[18px]">send</span>
-                Propose to Advisor
-              </button>
+                      } catch {}
+                    }
+                    setShowProposeModal(true);
+                  }}
+                  className="flex items-center gap-2 px-4 py-2.5 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors font-medium text-sm uppercase tracking-wider"
+                >
+                  <span className="material-symbols-outlined text-[18px]">send</span>
+                  Propose to Advisor
+                </button>
+              )}
               <button
                 onClick={() => setShowApproveModal(true)}
                 className="flex items-center gap-2 px-6 py-2.5 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors font-medium text-sm uppercase tracking-wider"
@@ -620,29 +622,31 @@ export default function ListingPage() {
             )
           ) : listing.status === "SUBMITTED" && isListingsOrAdmin ? (
             <>
-              <button
-                onClick={async () => {
-                  setSelectedAdvisor(null);
-                  setAdvisorSearch("");
-                  setAdvisorResults([]);
-                  if (listing?.userId) {
-                    try {
-                      const res = await fetch(`/api/users/${listing.userId}`);
-                      if (res.ok) {
-                        const owner = await res.json();
-                        if (owner.role === "ADVISOR") {
-                          setSelectedAdvisor({ id: owner.id, email: owner.email, name: owner.name });
+              {submission?.initiatorRole !== "ADVISOR" && (
+                <button
+                  onClick={async () => {
+                    setSelectedAdvisor(null);
+                    setAdvisorSearch("");
+                    setAdvisorResults([]);
+                    if (listing?.userId) {
+                      try {
+                        const res = await fetch(`/api/users/${listing.userId}`);
+                        if (res.ok) {
+                          const owner = await res.json();
+                          if (owner.role === "ADVISOR") {
+                            setSelectedAdvisor({ id: owner.id, email: owner.email, name: owner.name });
+                          }
                         }
-                      }
-                    } catch {}
-                  }
-                  setShowProposeModal(true);
-                }}
-                className="flex-1 flex items-center justify-center gap-2 bg-purple-600 hover:bg-purple-700 text-white py-2.5 px-4 rounded-lg font-medium text-xs tracking-widest uppercase"
-              >
-                <span className="material-symbols-outlined text-lg">send</span>
-                Propose
-              </button>
+                      } catch {}
+                    }
+                    setShowProposeModal(true);
+                  }}
+                  className="flex-1 flex items-center justify-center gap-2 bg-purple-600 hover:bg-purple-700 text-white py-2.5 px-4 rounded-lg font-medium text-xs tracking-widest uppercase"
+                >
+                  <span className="material-symbols-outlined text-lg">send</span>
+                  Propose
+                </button>
+              )}
               <button
                 onClick={() => setShowApproveModal(true)}
                 className="flex-1 flex items-center justify-center gap-2 bg-green-600 hover:bg-green-700 text-white py-2.5 px-4 rounded-lg font-medium text-xs tracking-widest uppercase"
