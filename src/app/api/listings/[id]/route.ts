@@ -74,10 +74,14 @@ export async function PATCH(req: Request, ctx: Ctx) {
     );
 
     if (!canReorder) {
-      return NextResponse.json(
-        { error: "Cannot reorder photos for this listing" },
-        { status: 403 }
-      );
+      // Allow advisors who have an active proposal for this listing
+      const proposedTo = await hasProposalForUser(id, user.id);
+      if (!proposedTo) {
+        return NextResponse.json(
+          { error: "Cannot reorder photos for this listing" },
+          { status: 403 }
+        );
+      }
     }
   } else if (isApproving) {
     // For approval, check approval permission

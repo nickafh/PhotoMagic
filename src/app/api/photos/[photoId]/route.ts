@@ -97,7 +97,11 @@ export async function PATCH(req: Request, ctx: Ctx) {
   const mockSession = { user: { id: user.id, role: user.role, email: user.email } };
 
   if (!canModifyListing(mockSession as any, listingWithUser.userId)) {
-    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    // Allow advisors who have an active proposal for this listing
+    const proposedTo = await hasProposalForUser(listingId, user.id);
+    if (!proposedTo) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
   }
 
   const photo = await togglePhotoExcluded(listingId, photoId);
