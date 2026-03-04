@@ -744,8 +744,8 @@ export default function ListingPage() {
         listingId={listing.id}
         photoIds={listing.photoIds ?? []}
         photos={listing.photos ?? {}}
-        onReorder={canReorder ? saveOrder : undefined}
-        onToggleExclude={canReorder ? togglePhotoExclude : undefined}
+        onReorder={canReorder && !pendingAdvisorApproval ? saveOrder : undefined}
+        onToggleExclude={canReorder && !pendingAdvisorApproval ? togglePhotoExclude : undefined}
       />
 
       <ExcludedPhotosSection

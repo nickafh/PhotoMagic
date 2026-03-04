@@ -299,15 +299,7 @@ export default function ReviewSubmissionPage() {
                 Download ZIP
               </a>
 
-              {listing.status === "SUBMITTED" && submission?.status === "SUBMITTED" && submission?.approverRole === "ADVISOR" ? (
-                <button
-                  disabled
-                  className="flex items-center gap-2 px-6 py-2.5 border-2 border-gold/40 text-gold bg-gold/5 font-bold rounded-lg text-sm uppercase tracking-wider cursor-not-allowed"
-                >
-                  <span className="material-symbols-outlined">hourglass_top</span>
-                  Pending Advisor
-                </button>
-              ) : listing.status === "SUBMITTED" && (
+              {listing.status === "SUBMITTED" && !(submission?.status === "SUBMITTED" && submission?.approverRole === "ADVISOR") && (
                 <>
                   {submission?.initiatorRole !== "ADVISOR" && (
                     <button
@@ -364,7 +356,7 @@ export default function ReviewSubmissionPage() {
                     alt=""
                     className="w-full h-full object-cover"
                   />
-                  <div className="absolute bottom-2 right-2 w-6 h-6 bg-amber-500 rounded-full flex items-center justify-center text-xs font-bold text-white">
+                  <div className="absolute bottom-2 right-2 w-6 h-6 bg-gold rounded-full flex items-center justify-center text-xs font-bold text-white">
                     {idx + 1}
                   </div>
                 </div>
