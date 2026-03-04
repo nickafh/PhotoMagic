@@ -244,7 +244,7 @@ export default function ListingPage() {
       await refresh();
       setShowApproveModal(false);
       setApproveNote("");
-      toast.success("Proposal approved. This order will be used for your listing.");
+      toast.success("Approved! This order has been finalized.");
     } catch (error) {
       console.error("Approve proposal error:", error);
       toast.error("Failed to approve proposal.");
@@ -501,6 +501,39 @@ export default function ListingPage() {
                 Submit for Review
               </button>
             )
+          ) : listing.status === "SUBMITTED" && isListingsOrAdmin ? (
+            <>
+              <button
+                onClick={async () => {
+                  setSelectedAdvisor(null);
+                  setAdvisorSearch("");
+                  setAdvisorResults([]);
+                  if (listing?.userId) {
+                    try {
+                      const res = await fetch(`/api/users/${listing.userId}`);
+                      if (res.ok) {
+                        const owner = await res.json();
+                        if (owner.role === "ADVISOR") {
+                          setSelectedAdvisor({ id: owner.id, email: owner.email, name: owner.name });
+                        }
+                      }
+                    } catch {}
+                  }
+                  setShowProposeModal(true);
+                }}
+                className="flex items-center gap-2 px-4 py-2.5 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors font-medium text-sm uppercase tracking-wider"
+              >
+                <span className="material-symbols-outlined text-[18px]">send</span>
+                Propose to Advisor
+              </button>
+              <button
+                onClick={() => setShowApproveModal(true)}
+                className="flex items-center gap-2 px-6 py-2.5 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors font-medium text-sm uppercase tracking-wider"
+              >
+                <span className="material-symbols-outlined text-[18px]">check_circle</span>
+                Approve
+              </button>
+            </>
           ) : (
             <button
               disabled
@@ -585,6 +618,39 @@ export default function ListingPage() {
                 Submit
               </button>
             )
+          ) : listing.status === "SUBMITTED" && isListingsOrAdmin ? (
+            <>
+              <button
+                onClick={async () => {
+                  setSelectedAdvisor(null);
+                  setAdvisorSearch("");
+                  setAdvisorResults([]);
+                  if (listing?.userId) {
+                    try {
+                      const res = await fetch(`/api/users/${listing.userId}`);
+                      if (res.ok) {
+                        const owner = await res.json();
+                        if (owner.role === "ADVISOR") {
+                          setSelectedAdvisor({ id: owner.id, email: owner.email, name: owner.name });
+                        }
+                      }
+                    } catch {}
+                  }
+                  setShowProposeModal(true);
+                }}
+                className="flex-1 flex items-center justify-center gap-2 bg-purple-600 hover:bg-purple-700 text-white py-2.5 px-4 rounded-lg font-medium text-xs tracking-widest uppercase"
+              >
+                <span className="material-symbols-outlined text-lg">send</span>
+                Propose
+              </button>
+              <button
+                onClick={() => setShowApproveModal(true)}
+                className="flex-1 flex items-center justify-center gap-2 bg-green-600 hover:bg-green-700 text-white py-2.5 px-4 rounded-lg font-medium text-xs tracking-widest uppercase"
+              >
+                <span className="material-symbols-outlined text-lg">check_circle</span>
+                Approve
+              </button>
+            </>
           ) : (
             <button
               disabled
@@ -831,7 +897,9 @@ export default function ListingPage() {
                 Approve Photo Order
               </h3>
               <p className="text-center text-slate-600 dark:text-slate-300 mb-4">
-                Once you approve, this is finalized and this order will be used for your listing.
+                {isListingsOrAdmin
+                  ? "Once approved, this order is finalized and will be used for this listing."
+                  : "Once you approve, this is finalized and this order will be used for your listing."}
               </p>
               <textarea
                 value={approveNote}

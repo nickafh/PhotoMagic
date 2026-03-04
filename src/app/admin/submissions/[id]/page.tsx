@@ -22,6 +22,8 @@ export default function ReviewSubmissionPage() {
   const [isRequestingChanges, setIsRequestingChanges] = useState(false);
   const [showProposeModal, setShowProposeModal] = useState(false);
   const [showChangesModal, setShowChangesModal] = useState(false);
+  const [showApproveModal, setShowApproveModal] = useState(false);
+  const [approveNote, setApproveNote] = useState("");
   const [proposalNote, setProposalNote] = useState("");
   const [changesNote, setChangesNote] = useState("");
   const [advisorSearch, setAdvisorSearch] = useState("");
@@ -115,7 +117,7 @@ export default function ReviewSubmissionPage() {
         const res = await fetch(`/api/listings/${id}/approve`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ submissionId: submission.id }),
+          body: JSON.stringify({ submissionId: submission.id, note: approveNote || undefined }),
         });
 
         if (!res.ok) {
@@ -124,6 +126,8 @@ export default function ReviewSubmissionPage() {
         }
 
         await fetchListing();
+        setShowApproveModal(false);
+        setApproveNote("");
         toast.success("Listing approved.");
       }
     } catch (error) {
@@ -328,21 +332,11 @@ export default function ReviewSubmissionPage() {
                   </button>
 
                   <button
-                    onClick={handleApprove}
-                    disabled={isApproving}
-                    className="flex items-center gap-2 px-6 py-2.5 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors font-medium disabled:opacity-50"
+                    onClick={() => setShowApproveModal(true)}
+                    className="flex items-center gap-2 px-6 py-2.5 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors font-medium"
                   >
-                    {isApproving ? (
-                      <>
-                        <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                        Approving...
-                      </>
-                    ) : (
-                      <>
-                        <span className="material-symbols-outlined">check_circle</span>
-                        Approve
-                      </>
-                    )}
+                    <span className="material-symbols-outlined">check_circle</span>
+                    Approve
                   </button>
                 </>
               )}
@@ -580,6 +574,61 @@ export default function ReviewSubmissionPage() {
                     </>
                   ) : (
                     "Request Changes"
+                  )}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Approve Modal */}
+        {showApproveModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <div
+              className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+              onClick={() => setShowApproveModal(false)}
+            />
+            <div className="relative bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-md">
+              <div className="p-6">
+                <div className="w-14 h-14 mx-auto mb-4 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
+                  <span className="material-symbols-outlined text-green-600 dark:text-green-400 text-3xl">
+                    check_circle
+                  </span>
+                </div>
+                <h3 className="text-xl font-semibold text-center text-gray-900 dark:text-white mb-2">
+                  Approve Photo Order
+                </h3>
+                <p className="text-center text-gray-600 dark:text-gray-300 mb-4">
+                  Once approved, this order is finalized and will be used for this listing.
+                </p>
+                <textarea
+                  value={approveNote}
+                  onChange={(e) => setApproveNote(e.target.value)}
+                  placeholder="Add a note for the advisor (optional)"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 focus:ring-2 focus:ring-green-500 focus:border-transparent resize-none"
+                  rows={3}
+                />
+              </div>
+              <div className="flex gap-3 p-4 border-t border-gray-200 dark:border-gray-700">
+                <button
+                  onClick={() => setShowApproveModal(false)}
+                  disabled={isApproving}
+                  className="flex-1 px-4 py-2.5 text-gray-700 dark:text-gray-300 font-semibold rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors disabled:opacity-50"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleApprove}
+                  disabled={isApproving}
+                  className="flex-1 px-4 py-2.5 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-lg transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+                >
+                  {isApproving ? (
+                    <>
+                      <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                      Approving...
+                    </>
+                  ) : (
+                    "Approve"
                   )}
                 </button>
               </div>
