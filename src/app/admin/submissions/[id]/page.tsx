@@ -296,7 +296,15 @@ export default function ReviewSubmissionPage() {
                 Download ZIP
               </a>
 
-              {listing.status === "SUBMITTED" && (
+              {listing.status === "SUBMITTED" && submission?.status === "SUBMITTED" && submission?.approverRole === "ADVISOR" ? (
+                <button
+                  disabled
+                  className="flex items-center gap-2 px-6 py-2.5 bg-slate-200 dark:bg-slate-700 text-slate-500 dark:text-slate-400 font-semibold rounded-lg text-sm uppercase tracking-wider cursor-not-allowed"
+                >
+                  <span className="material-symbols-outlined">hourglass_top</span>
+                  Pending Advisor
+                </button>
+              ) : listing.status === "SUBMITTED" && (
                 <>
                   {submission?.initiatorRole !== "ADVISOR" && (
                     <button

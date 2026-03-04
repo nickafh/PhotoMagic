@@ -406,6 +406,10 @@ export async function getAllListings(options?: {
         orderBy: { sortOrder: "asc" },
       },
       user: true,
+      submissions: {
+        orderBy: { createdAt: "desc" },
+        take: 1,
+      },
     },
     orderBy: { updatedAt: "desc" },
     take: options?.limit,

@@ -6,8 +6,12 @@ import ListingShell from "@/components/ListingsShell";
 import StatusBadge from "@/components/StatusBadge";
 import type { ListingWithPhotosAndUser } from "@/lib/types";
 
+type PendingListing = ListingWithPhotosAndUser & {
+  submissions?: { approverRole: string; status: string }[];
+};
+
 export default function SubmissionsPage() {
-  const [listings, setListings] = useState<ListingWithPhotosAndUser[]>([]);
+  const [listings, setListings] = useState<PendingListing[]>([]);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
 
@@ -70,67 +74,79 @@ export default function SubmissionsPage() {
             </div>
           ) : (
             <div className="grid gap-3 md:gap-4">
-              {listings.map((listing) => (
-                <Link
-                  key={listing.id}
-                  href={`/admin/submissions/${listing.id}`}
-                  className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-4 md:p-6 flex items-center gap-3 md:gap-6 hover:shadow-md active:bg-gray-50 dark:active:bg-gray-700/50 transition-all cursor-pointer"
-                >
-                  {/* Thumbnail */}
-                  <div className="w-16 h-16 md:w-24 md:h-24 bg-gray-100 dark:bg-gray-700 rounded-lg overflow-hidden shrink-0">
-                    {listing.photos.length > 0 ? (
-                      <img
-                        src={`/api/photos/${listing.photos[0].id}?listingId=${listing.id}&thumb=1`}
-                        alt=""
-                        className="w-full h-full object-cover"
-                      />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center">
-                        <span className="material-symbols-outlined text-2xl md:text-3xl text-gray-300">
-                          photo_library
+              {listings.map((listing) => {
+                const sub = listing.submissions?.[0];
+                const isPendingAdvisor = sub?.status === "SUBMITTED" && sub?.approverRole === "ADVISOR";
+                return (
+                  <Link
+                    key={listing.id}
+                    href={`/admin/submissions/${listing.id}`}
+                    className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-4 md:p-6 flex items-center gap-3 md:gap-6 hover:shadow-md active:bg-gray-50 dark:active:bg-gray-700/50 transition-all cursor-pointer"
+                  >
+                    {/* Thumbnail */}
+                    <div className="w-16 h-16 md:w-24 md:h-24 bg-gray-100 dark:bg-gray-700 rounded-lg overflow-hidden shrink-0">
+                      {listing.photos.length > 0 ? (
+                        <img
+                          src={`/api/photos/${listing.photos[0].id}?listingId=${listing.id}&thumb=1`}
+                          alt=""
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center">
+                          <span className="material-symbols-outlined text-2xl md:text-3xl text-gray-300">
+                            photo_library
+                          </span>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Info */}
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2">
+                        <h3 className="font-semibold text-gray-900 dark:text-white text-base md:text-lg truncate">
+                          {listing.address}
+                        </h3>
+                        {isPendingAdvisor && (
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400 shrink-0">
+                            <span className="material-symbols-outlined text-xs">hourglass_top</span>
+                            Pending Advisor
+                          </span>
+                        )}
+                      </div>
+                      <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-1 md:mt-2 text-sm text-gray-500 dark:text-gray-400">
+                        <span className="flex items-center gap-1">
+                          <span className="material-symbols-outlined text-base md:text-lg">
+                            person
+                          </span>
+                          <span className="truncate max-w-[120px] md:max-w-none">{listing.user?.name || listing.user?.email || "Unknown"}</span>
+                        </span>
+                        <span className="flex items-center gap-1">
+                          <span className="material-symbols-outlined text-base md:text-lg">
+                            photo
+                          </span>
+                          {listing.photos.filter((p) => !p.excluded).length}
+                        </span>
+                        <span className="hidden md:flex items-center gap-1">
+                          <span className="material-symbols-outlined text-lg">
+                            schedule
+                          </span>
+                          {new Date(listing.updatedAt).toLocaleDateString("en-US", {
+                            month: "short",
+                            day: "numeric",
+                            year: "numeric",
+                          })}
                         </span>
                       </div>
-                    )}
-                  </div>
-
-                  {/* Info */}
-                  <div className="flex-1 min-w-0">
-                    <h3 className="font-semibold text-gray-900 dark:text-white text-base md:text-lg truncate">
-                      {listing.address}
-                    </h3>
-                    <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-1 md:mt-2 text-sm text-gray-500 dark:text-gray-400">
-                      <span className="flex items-center gap-1">
-                        <span className="material-symbols-outlined text-base md:text-lg">
-                          person
-                        </span>
-                        <span className="truncate max-w-[120px] md:max-w-none">{listing.user?.name || listing.user?.email || "Unknown"}</span>
-                      </span>
-                      <span className="flex items-center gap-1">
-                        <span className="material-symbols-outlined text-base md:text-lg">
-                          photo
-                        </span>
-                        {listing.photos.filter((p) => !p.excluded).length}
-                      </span>
-                      <span className="hidden md:flex items-center gap-1">
-                        <span className="material-symbols-outlined text-lg">
-                          schedule
-                        </span>
-                        {new Date(listing.updatedAt).toLocaleDateString("en-US", {
-                          month: "short",
-                          day: "numeric",
-                          year: "numeric",
-                        })}
-                      </span>
                     </div>
-                  </div>
 
-                  {/* Arrow (mobile) / Review button (desktop) */}
-                  <span className="material-symbols-outlined text-gray-400 text-xl md:hidden shrink-0">chevron_right</span>
-                  <span className="hidden md:inline-flex px-6 py-2.5 bg-amber-600 hover:bg-amber-700 text-white font-medium rounded-lg transition-colors shrink-0">
-                    Review
-                  </span>
-                </Link>
-              ))}
+                    {/* Arrow (mobile) / Review button (desktop) */}
+                    <span className="material-symbols-outlined text-gray-400 text-xl md:hidden shrink-0">chevron_right</span>
+                    <span className="hidden md:inline-flex px-6 py-2.5 bg-amber-600 hover:bg-amber-700 text-white font-medium rounded-lg transition-colors shrink-0">
+                      Review
+                    </span>
+                  </Link>
+                );
+              })}
             </div>
           )}
         </div>

@@ -7,9 +7,13 @@ import StatusBadge from "@/components/StatusBadge";
 import { useUser } from "@/components/UserProvider";
 import type { ListingWithPhotosAndUser } from "@/lib/types";
 
+type PendingListing = ListingWithPhotosAndUser & {
+  submissions?: { approverRole: string; status: string }[];
+};
+
 export default function AdminDashboardPage() {
   const { user } = useUser();
-  const [pendingListings, setPendingListings] = useState<ListingWithPhotosAndUser[]>([]);
+  const [pendingListings, setPendingListings] = useState<PendingListing[]>([]);
   const [stats, setStats] = useState({
     pending: 0,
     approved: 0,
@@ -185,23 +189,35 @@ export default function AdminDashboardPage() {
               <>
               {/* Mobile: Card layout */}
               <div className="md:hidden divide-y divide-gray-200 dark:divide-gray-700">
-                {pendingListings.map((listing) => (
-                  <Link
-                    key={listing.id}
-                    href={`/admin/submissions/${listing.id}`}
-                    className="flex items-center gap-3 px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-700/50 active:bg-gray-100 dark:active:bg-gray-700 transition-colors cursor-pointer"
-                  >
-                    <div className="flex-1 min-w-0">
-                      <p className="font-medium text-gray-900 dark:text-white truncate">
-                        {listing.address}
-                      </p>
-                      <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">
-                        {listing.user?.name || listing.user?.email || "Unknown"} &middot; {listing.photos.filter((p) => !p.excluded).length} photos &middot; {new Date(listing.updatedAt).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
-                      </p>
-                    </div>
-                    <span className="material-symbols-outlined text-gray-400 text-xl shrink-0">chevron_right</span>
-                  </Link>
-                ))}
+                {pendingListings.map((listing) => {
+                  const sub = listing.submissions?.[0];
+                  const isPendingAdvisor = sub?.status === "SUBMITTED" && sub?.approverRole === "ADVISOR";
+                  return (
+                    <Link
+                      key={listing.id}
+                      href={`/admin/submissions/${listing.id}`}
+                      className="flex items-center gap-3 px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-700/50 active:bg-gray-100 dark:active:bg-gray-700 transition-colors cursor-pointer"
+                    >
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2">
+                          <p className="font-medium text-gray-900 dark:text-white truncate">
+                            {listing.address}
+                          </p>
+                          {isPendingAdvisor && (
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400 shrink-0">
+                              <span className="material-symbols-outlined text-xs">hourglass_top</span>
+                              Advisor
+                            </span>
+                          )}
+                        </div>
+                        <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">
+                          {listing.user?.name || listing.user?.email || "Unknown"} &middot; {listing.photos.filter((p) => !p.excluded).length} photos &middot; {new Date(listing.updatedAt).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
+                        </p>
+                      </div>
+                      <span className="material-symbols-outlined text-gray-400 text-xl shrink-0">chevron_right</span>
+                    </Link>
+                  );
+                })}
               </div>
 
               {/* Desktop: Table layout */}
@@ -224,38 +240,50 @@ export default function AdminDashboardPage() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
-                  {pendingListings.map((listing) => (
-                    <tr
-                      key={listing.id}
-                      className="hover:bg-gray-50 dark:hover:bg-gray-700/50"
-                    >
-                      <td className="px-6 py-4">
-                        <span className="font-medium text-gray-900 dark:text-white">
-                          {listing.address}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 text-sm text-gray-600 dark:text-gray-400">
-                        {listing.user?.name || listing.user?.email || "Unknown"}
-                      </td>
-                      <td className="px-6 py-4 text-sm text-gray-600 dark:text-gray-400">
-                        {listing.photos.filter((p) => !p.excluded).length}
-                      </td>
-                      <td className="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">
-                        {new Date(listing.updatedAt).toLocaleDateString("en-US", {
-                          month: "short",
-                          day: "numeric",
-                        })}
-                      </td>
-                      <td className="px-6 py-4 text-right">
-                        <Link
-                          href={`/admin/submissions/${listing.id}`}
-                          className="px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white text-sm font-medium rounded-lg transition-colors"
-                        >
-                          Review
-                        </Link>
-                      </td>
-                    </tr>
-                  ))}
+                  {pendingListings.map((listing) => {
+                    const sub = listing.submissions?.[0];
+                    const isPendingAdvisor = sub?.status === "SUBMITTED" && sub?.approverRole === "ADVISOR";
+                    return (
+                      <tr
+                        key={listing.id}
+                        className="hover:bg-gray-50 dark:hover:bg-gray-700/50"
+                      >
+                        <td className="px-6 py-4">
+                          <div className="flex items-center gap-2">
+                            <span className="font-medium text-gray-900 dark:text-white">
+                              {listing.address}
+                            </span>
+                            {isPendingAdvisor && (
+                              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400">
+                                <span className="material-symbols-outlined text-xs">hourglass_top</span>
+                                Pending Advisor
+                              </span>
+                            )}
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 text-sm text-gray-600 dark:text-gray-400">
+                          {listing.user?.name || listing.user?.email || "Unknown"}
+                        </td>
+                        <td className="px-6 py-4 text-sm text-gray-600 dark:text-gray-400">
+                          {listing.photos.filter((p) => !p.excluded).length}
+                        </td>
+                        <td className="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">
+                          {new Date(listing.updatedAt).toLocaleDateString("en-US", {
+                            month: "short",
+                            day: "numeric",
+                          })}
+                        </td>
+                        <td className="px-6 py-4 text-right">
+                          <Link
+                            href={`/admin/submissions/${listing.id}`}
+                            className="px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white text-sm font-medium rounded-lg transition-colors"
+                          >
+                            Review
+                          </Link>
+                        </td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
               </>
