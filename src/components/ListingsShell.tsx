@@ -53,7 +53,7 @@ export default function ListingShell({
         </div>
 
         {/* Desktop Actions Bar */}
-        <div className="hidden md:flex bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 px-8 py-4 items-center justify-end z-10 shrink-0 gap-4">
+        <div className="hidden md:flex bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 px-8 py-4 items-center justify-end z-10 shrink-0 gap-4 shadow-sm">
           {actions}
         </div>
 

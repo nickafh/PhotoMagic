@@ -89,16 +89,16 @@ export function UserMenu() {
         {initials}
       </div>
       <div className="flex-1 min-w-0">
-        <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
+        <p className="text-sm font-medium text-white truncate">
           {displayName || displayEmail}
         </p>
-        <p className="text-xs text-gray-500 dark:text-gray-400">
+        <p className="text-xs text-white/60">
           {roleLabel}
         </p>
       </div>
       <button
         onClick={() => signOut()}
-        className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
+        className="p-2 text-white/40 hover:text-white/70 transition-colors"
         title="Sign out"
       >
         <svg
