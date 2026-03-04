@@ -97,7 +97,8 @@ function AllListingsContent() {
             <form onSubmit={handleSearch} className="flex-1 min-w-[200px]">
               <div className="relative">
                 <input
-                  type="text"
+                  type="search"
+                  inputMode="search"
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                   placeholder="Search by address..."

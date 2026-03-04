@@ -443,6 +443,7 @@ export default function ListingPage() {
             onClick={() => setShowDeleteModal(true)}
             className="flex items-center justify-center w-10 h-10 text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-all"
             title="Delete listing"
+            aria-label="Delete listing"
           >
             <span className="material-symbols-outlined text-xl">delete</span>
           </button>
@@ -554,6 +555,7 @@ export default function ListingPage() {
               href={`/api/listings/${id}/downloads`}
               className="flex items-center justify-center w-11 h-11 text-slate-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-all shrink-0"
               title="Download ZIP"
+              aria-label="Download ZIP"
             >
               <span className="material-symbols-outlined text-xl">download</span>
             </a>
@@ -562,6 +564,7 @@ export default function ListingPage() {
             onClick={() => setShowDeleteModal(true)}
             className="flex items-center justify-center w-11 h-11 text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-all shrink-0"
             title="Delete listing"
+            aria-label="Delete listing"
           >
             <span className="material-symbols-outlined text-xl">delete</span>
           </button>
@@ -760,7 +763,7 @@ export default function ListingPage() {
             className="absolute inset-0 bg-black/60 backdrop-blur-sm animate-fade-in"
             onClick={() => setShowProposeModal(false)}
           />
-          <div className="relative bg-white dark:bg-slate-800 rounded-2xl shadow-2xl w-full max-w-md animate-scale-in">
+          <div className="relative bg-white dark:bg-slate-800 rounded-2xl shadow-2xl w-full max-w-md max-h-[90vh] overflow-y-auto animate-scale-in">
             <div className="p-6">
               <div className="w-14 h-14 mx-auto mb-4 rounded-full bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center">
                 <span className="material-symbols-outlined text-purple-600 dark:text-purple-400 text-3xl">
@@ -813,6 +816,7 @@ export default function ListingPage() {
                         if (advisorResults.length > 0) setShowAdvisorDropdown(true);
                       }}
                       placeholder="Search by name or email..."
+                      inputMode="search"
                       className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-white placeholder-slate-400 focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                     />
                     {advisorSearchLoading && (
@@ -890,7 +894,7 @@ export default function ListingPage() {
             className="absolute inset-0 bg-black/60 backdrop-blur-sm animate-fade-in"
             onClick={() => setShowApproveModal(false)}
           />
-          <div className="relative bg-white dark:bg-slate-800 rounded-2xl shadow-2xl w-full max-w-md animate-scale-in">
+          <div className="relative bg-white dark:bg-slate-800 rounded-2xl shadow-2xl w-full max-w-md max-h-[90vh] overflow-y-auto animate-scale-in">
             <div className="p-6">
               <div className="w-14 h-14 mx-auto mb-4 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
                 <span className="material-symbols-outlined text-green-600 dark:text-green-400 text-3xl">
@@ -963,7 +967,7 @@ function DeleteConfirmModal({
       />
 
       {/* Modal */}
-      <div className="relative bg-white dark:bg-slate-800 rounded-2xl shadow-2xl w-full max-w-md animate-scale-in">
+      <div className="relative bg-white dark:bg-slate-800 rounded-2xl shadow-2xl w-full max-w-md max-h-[90vh] overflow-y-auto animate-scale-in">
         <div className="p-6">
           {/* Icon */}
           <div className="w-14 h-14 mx-auto mb-4 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center">

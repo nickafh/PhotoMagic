@@ -28,7 +28,8 @@ export default function MobileHeader({ title, status }: MobileHeaderProps) {
           <div className="flex items-center gap-3">
             <button
               onClick={() => setShowMenu(!showMenu)}
-              className="text-white/90 hover:text-white transition-colors p-1 -ml-1"
+              className="text-white/90 hover:text-white transition-colors p-2 -ml-2"
+              aria-label="Open menu"
             >
               <span className="material-symbols-outlined text-[22px]">menu</span>
             </button>
@@ -64,7 +65,7 @@ export default function MobileHeader({ title, status }: MobileHeaderProps) {
                 </div>
                 <button
                   onClick={() => setShowMenu(false)}
-                  className="text-white/50 hover:text-white transition-colors p-1"
+                  className="text-white/50 hover:text-white transition-colors p-2"
                   aria-label="Close menu"
                 >
                   <span className="material-symbols-outlined text-xl">close</span>

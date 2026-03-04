@@ -82,6 +82,7 @@ function ExcludedTile({ id, listingId, onRestore, delay = 0 }: ExcludedTileProps
         onClick={onRestore}
         className="absolute inset-0 flex items-center justify-center bg-black/30 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-all duration-200 rounded-lg"
         title="Restore photo"
+        aria-label="Restore photo"
       >
         <div className="w-9 h-9 bg-emerald-500 hover:bg-emerald-600 rounded-full flex items-center justify-center border-2 border-white/90 shadow-lg transition-all duration-200 scale-100 md:scale-90 md:group-hover:scale-100">
           <span className="material-symbols-outlined text-white text-lg">add</span>

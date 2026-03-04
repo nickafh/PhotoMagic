@@ -43,7 +43,7 @@ export default function CreateListingModal({
         aria-hidden
       />
 
-      <div className="relative bg-white dark:bg-gray-800 rounded-2xl shadow-xl ring-1 ring-black/5 dark:ring-white/10 w-full max-w-md mx-4 overflow-hidden">
+      <div className="relative bg-white dark:bg-gray-800 rounded-2xl shadow-xl ring-1 ring-black/5 dark:ring-white/10 w-full max-w-md mx-4 max-h-[90vh] overflow-y-auto overflow-x-hidden">
         <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
           <h2 className="text-xl font-display font-semibold text-gray-900 dark:text-white tracking-tight">
             Create New Listing

@@ -97,7 +97,7 @@ export default function MobileNav() {
               </span>
               <span
                 className={`
-                  text-[9px] mt-0.5 font-semibold tracking-wider uppercase
+                  text-[10px] mt-0.5 font-semibold tracking-wider uppercase
                   transition-colors duration-200
                 `}
               >

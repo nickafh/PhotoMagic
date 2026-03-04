@@ -35,7 +35,7 @@ export default function StatusBadge({ status, size = "sm" }: StatusBadgeProps) {
   const isPulsing = "pulse" in style && style.pulse;
 
   const sizeClasses = {
-    sm: "px-2.5 py-1 text-[10px]",
+    sm: "px-2.5 py-1 text-[11px]",
     md: "px-3 py-1.5 text-xs",
     lg: "px-4 py-2 text-sm",
   }[size];

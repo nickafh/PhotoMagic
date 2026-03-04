@@ -60,6 +60,7 @@ body {
 .custom-scrollbar {
   scrollbar-width: thin;
   scrollbar-color: rgba(153, 153, 153, 0.25) transparent;
+  overscroll-behavior: contain;
 }
 
 /* ------------------------------
@@ -243,6 +244,17 @@ body {
    Utility Enhancements
 -------------------------------- */
 @layer base {
+  /* Eliminate 300ms tap delay on mobile */
+  a,
+  button,
+  [role="button"],
+  input,
+  select,
+  textarea,
+  label {
+    touch-action: manipulation;
+  }
+
   img {
     user-select: none;
   }

@@ -292,9 +292,9 @@ const SortableTile = memo(function SortableTile({
         <div
           className={`
             photo-badge
-            bottom-1 right-1 w-5 h-5
+            bottom-1 right-1 w-6 h-6
             md:bottom-2.5 md:right-2.5 md:w-8 md:h-8
-            text-[9px] md:text-sm
+            text-[10px] md:text-sm
             ${!isDragging && "md:group-hover:scale-110"}
           `}
         >
