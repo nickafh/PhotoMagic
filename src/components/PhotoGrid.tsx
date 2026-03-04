@@ -213,7 +213,8 @@ const SortableTile = memo(function SortableTile({
       : undefined,
     transition: transition ?? undefined,
     willChange: "transform",
-    touchAction: "none",
+    // touchAction only on drag handles, not the container — allows native scroll on mobile
+    touchAction: isMobile ? "manipulation" : "none",
     WebkitUserSelect: "none",
     userSelect: "none",
   };
@@ -226,7 +227,7 @@ const SortableTile = memo(function SortableTile({
       onMouseLeave={() => setIsHovered(false)}
       className="group relative"
     >
-      {/* Exclude button above drag overlay so it stays clickable on desktop */}
+      {/* Exclude button - always visible on mobile, hover-reveal on desktop */}
       {onExclude && (
         <button
           type="button"
@@ -236,31 +237,35 @@ const SortableTile = memo(function SortableTile({
           }}
           onPointerDown={(e) => e.stopPropagation()}
           className={`
-            absolute top-2 left-2 z-20 w-8 h-8
-            hidden md:flex
+            absolute z-20
+            top-1 left-1 w-6 h-6
+            md:top-2 md:left-2 md:w-8 md:h-8
+            flex items-center justify-center
             bg-red-500/90 hover:bg-red-600 backdrop-blur-sm
-            rounded-full items-center justify-center
+            rounded-full
             border-2 border-white/90 shadow-lg
             transition-all duration-200
-            ${isHovered ? "opacity-100 scale-100" : "opacity-0 scale-90"}
+            ${isMobile ? "opacity-90" : isHovered ? "opacity-100 scale-100" : "opacity-0 scale-90"}
           `}
           title="Mark as Do Not Use"
         >
-          <span className="material-symbols-outlined text-white text-base">close</span>
+          <span className="material-symbols-outlined text-white text-xs md:text-base">close</span>
         </button>
       )}
 
-      {/* One drag target: on mobile a small handle (avoids stealing scroll); on desktop the whole tile. */}
+      {/* Drag target: on mobile a bottom-right grip handle; on desktop the whole tile. */}
       {isMobile ? (
-        <div
-          className="absolute top-1 left-1 right-1 z-10 flex justify-center py-2 rounded-t-lg bg-black/50 touch-none cursor-grab active:cursor-grabbing"
-          style={{ touchAction: "none" }}
-          {...attributes}
-          {...listeners}
-          aria-label="Hold to drag and reorder"
-        >
-          <span className="material-symbols-outlined text-white/90 text-lg">drag_indicator</span>
-        </div>
+        onExclude && (
+          <div
+            className="absolute bottom-0 right-0 z-10 flex items-center justify-center w-8 h-8 rounded-tl-lg bg-black/50 touch-none cursor-grab active:cursor-grabbing"
+            style={{ touchAction: "none" }}
+            {...attributes}
+            {...listeners}
+            aria-label="Hold to drag and reorder"
+          >
+            <span className="material-symbols-outlined text-white/80 text-base">drag_indicator</span>
+          </div>
+        )
       ) : (
         <div
           className="absolute inset-0 z-10 cursor-grab active:cursor-grabbing"
