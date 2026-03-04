@@ -48,12 +48,12 @@ export default function ListingShell({
       {/* Main content with left margin for fixed sidebar on desktop */}
       <main className="flex flex-col min-h-screen md:h-screen md:max-h-screen md:overflow-hidden md:ml-64">
         {/* Desktop Topbar - hidden on mobile */}
-        <div className="hidden md:block">
+        <div className="hidden md:block relative z-[1000]">
           <Topbar title={title} />
         </div>
 
         {/* Desktop Actions Bar */}
-        <div className="hidden md:flex bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 px-8 py-4 items-center justify-end z-10 shrink-0 gap-4 shadow-sm">
+        <div className="hidden md:flex bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 px-8 py-4 items-center justify-end relative z-[1000] shrink-0 gap-4 shadow-sm">
           {actions}
         </div>
 
