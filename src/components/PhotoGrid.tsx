@@ -79,13 +79,13 @@ export default function PhotoGrid({
     }
   }, [activePhotoIds.join(",")]);
 
-  // Mouse and Touch sensors. On mobile, use longer delay so scroll isn't stolen; drag handle gives clear target.
+  // Mouse: 5px drag distance. Touch: 200ms long-press with 10px tolerance for finger jitter.
   const sensors = useSensors(
     useSensor(MouseSensor, {
       activationConstraint: { distance: onReorder ? 5 : Infinity },
     }),
     useSensor(TouchSensor, {
-      activationConstraint: { delay: onReorder ? 250 : Infinity, tolerance: 8 },
+      activationConstraint: { delay: onReorder ? 200 : Infinity, tolerance: 10 },
     })
   );
 
@@ -213,8 +213,8 @@ const SortableTile = memo(function SortableTile({
       : undefined,
     transition: transition ?? undefined,
     willChange: "transform",
-    // touchAction only on drag handles, not the container — allows native scroll on mobile
-    touchAction: isMobile ? "manipulation" : "none",
+    // manipulation allows native scroll/pinch on both mobile and desktop trackpads
+    touchAction: "manipulation",
     WebkitUserSelect: "none",
     userSelect: "none",
   };
@@ -253,27 +253,13 @@ const SortableTile = memo(function SortableTile({
         </button>
       )}
 
-      {/* Drag target: on mobile a bottom-right grip handle; on desktop the whole tile. */}
-      {isMobile ? (
-        onExclude && (
-          <div
-            className="absolute bottom-0 right-0 z-10 flex items-center justify-center w-8 h-8 rounded-tl-lg bg-black/50 touch-none cursor-grab active:cursor-grabbing"
-            style={{ touchAction: "none" }}
-            {...attributes}
-            {...listeners}
-            aria-label="Hold to drag and reorder"
-          >
-            <span className="material-symbols-outlined text-white/80 text-base">drag_indicator</span>
-          </div>
-        )
-      ) : (
-        <div
-          className="absolute inset-0 z-10 cursor-grab active:cursor-grabbing"
-          aria-label="Drag to reorder photo"
-          {...attributes}
-          {...listeners}
-        />
-      )}
+      {/* Drag target: entire tile. Mouse: 5px drag distance. Touch: 200ms long-press. */}
+      <div
+        className="absolute inset-0 z-10 cursor-grab active:cursor-grabbing"
+        aria-label={isMobile ? "Hold to drag and reorder" : "Drag to reorder photo"}
+        {...attributes}
+        {...listeners}
+      />
       <div
         className={`
           photo-tile
