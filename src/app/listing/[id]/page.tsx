@@ -448,7 +448,7 @@ export default function ListingPage() {
           >
             <span className="material-symbols-outlined text-xl">delete</span>
           </button>
-          {listing.status !== "APPROVED" && !pendingAdvisorApproval && (
+          {listing.status !== "APPROVED" && (
             <button
               onClick={() => fileInputRef.current?.click()}
               disabled={isUploading}
@@ -577,7 +577,7 @@ export default function ListingPage() {
           >
             <span className="material-symbols-outlined text-xl">delete</span>
           </button>
-          {listing.status !== "APPROVED" && !pendingAdvisorApproval && (
+          {listing.status !== "APPROVED" && (
             <button
               onClick={() => fileInputRef.current?.click()}
               disabled={isUploading}
@@ -744,8 +744,8 @@ export default function ListingPage() {
         listingId={listing.id}
         photoIds={listing.photoIds ?? []}
         photos={listing.photos ?? {}}
-        onReorder={canReorder && !pendingAdvisorApproval ? saveOrder : undefined}
-        onToggleExclude={canReorder && !pendingAdvisorApproval ? togglePhotoExclude : undefined}
+        onReorder={canReorder ? saveOrder : undefined}
+        onToggleExclude={canReorder ? togglePhotoExclude : undefined}
       />
 
       <ExcludedPhotosSection
