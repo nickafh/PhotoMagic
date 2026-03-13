@@ -246,7 +246,7 @@ export function buildProposalEmail(data: {
     <body>
       <div class="container">
         <div class="header">
-          <h1 style="margin: 0; font-size: 24px;">PhotoMagic Gallery Ready</h1>
+          <h1 style="margin: 0; font-size: 24px;">PhotoMagic Order Proposal</h1>
         </div>
         <div class="content">
           <p>${greeting}</p>
