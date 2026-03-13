@@ -152,6 +152,7 @@ export function buildApprovalEmail(data: {
   approverName: string;
   photoCount: number;
   baseUrl: string;
+  senderEmail: string;
 }) {
   const viewUrl = `${data.baseUrl}/listing/${data.listingId}`;
   const downloadUrl = `${data.baseUrl}/api/listings/${data.listingId}/downloads`;
@@ -165,7 +166,7 @@ export function buildApprovalEmail(data: {
       <style>
         body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #333; }
         .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-        .header { background-color: #16a34a; color: white; padding: 20px; border-radius: 8px 8px 0 0; }
+        .header { background-color: #002349; color: white; padding: 20px; border-radius: 8px 8px 0 0; }
         .content { background-color: #f9fafb; padding: 20px; border: 1px solid #e5e7eb; border-top: none; border-radius: 0 0 8px 8px; }
         .details { margin: 20px 0; }
         .detail-row { display: flex; padding: 8px 0; border-bottom: 1px solid #e5e7eb; }
@@ -197,6 +198,10 @@ export function buildApprovalEmail(data: {
               <span class="detail-label">Reviewed by:</span>
               <span class="detail-value">${data.approverName}</span>
             </div>
+            <div class="detail-row">
+              <span class="detail-label">Email:</span>
+              <span class="detail-value">${data.senderEmail}</span>
+            </div>
           </div>
 
           <a href="${viewUrl}" class="button">View Listing</a>
@@ -223,7 +228,7 @@ export function buildProposalEmail(data: {
 }) {
   const viewUrl = `${data.baseUrl}/listing/${data.listingId}`;
 
-  const subject = `Photo Order Proposal: ${data.address}`;
+  const subject = `PhotoMagic Order Proposal: ${data.address}`;
 
   const body = `
     <!DOCTYPE html>
@@ -232,19 +237,19 @@ export function buildProposalEmail(data: {
       <style>
         body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #333; }
         .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-        .header { background-color: #7c3aed; color: white; padding: 20px; border-radius: 8px 8px 0 0; }
+        .header { background-color: #002349; color: white; padding: 20px; border-radius: 8px 8px 0 0; }
         .content { background-color: #f9fafb; padding: 20px; border: 1px solid #e5e7eb; border-top: none; border-radius: 0 0 8px 8px; }
         .details { margin: 20px 0; }
         .detail-row { display: flex; padding: 8px 0; border-bottom: 1px solid #e5e7eb; }
         .detail-label { font-weight: 600; width: 120px; color: #6b7280; }
         .detail-value { color: #111827; }
-        .button { display: inline-block; background-color: #7c3aed; color: white !important; text-decoration: none; padding: 12px 24px; border-radius: 6px; font-weight: 600; margin-top: 20px; }
+        .button { display: inline-block; background-color: #002349; color: white !important; text-decoration: none; padding: 12px 24px; border-radius: 6px; font-weight: 600; margin-top: 20px; }
       </style>
     </head>
     <body>
       <div class="container">
         <div class="header">
-          <h1 style="margin: 0; font-size: 24px;">Photo Order Proposal</h1>
+          <h1 style="margin: 0; font-size: 24px;">PhotoMagic Order Proposal</h1>
         </div>
         <div class="content">
           <p>The listings team has proposed a new photo order for your listing. Please review and approve or request changes.</p>
@@ -256,11 +261,11 @@ export function buildProposalEmail(data: {
             </div>
             <div class="detail-row">
               <span class="detail-label">Proposed by:</span>
-              <span class="detail-value">${data.proposerName} (${data.proposerEmail})</span>
+              <span class="detail-value">${data.proposerName}</span>
             </div>
             <div class="detail-row">
               <span class="detail-label">Photos:</span>
-              <span class="detail-value">${data.photoCount} photos</span>
+              <span class="detail-value">${data.photoCount}photos</span>
             </div>
           </div>
 
@@ -353,10 +358,11 @@ export function buildSubmissionEmail(data: {
   submitterEmail: string;
   photoCount: number;
   baseUrl: string;
+  senderEmail: string;
 }) {
   const reviewUrl = `${data.baseUrl}/admin/submissions/${data.listingId}`;
 
-  const subject = `New Photo Submission: ${data.listingAddress}`;
+  const subject = `New Photo Arrangement: ${data.listingAddress}`;
 
   const body = `
     <!DOCTYPE html>
@@ -378,7 +384,7 @@ export function buildSubmissionEmail(data: {
     <body>
       <div class="container">
         <div class="header">
-          <h1 style="margin: 0; font-size: 24px;">New Photo Submission</h1>
+          <h1 style="margin: 0; font-size: 24px;">New Photo Arrangement</h1>
         </div>
         <div class="content">
           <p>A new photo arrangement has been submitted for review.</p>
