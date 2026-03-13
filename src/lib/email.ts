@@ -225,6 +225,7 @@ export function buildProposalEmail(data: {
   photoCount: number;
   listingId: string;
   baseUrl: string;
+  senderEmail: string;
 }) {
   const viewUrl = `${data.baseUrl}/listing/${data.listingId}`;
 
@@ -265,7 +266,11 @@ export function buildProposalEmail(data: {
             </div>
             <div class="detail-row">
               <span class="detail-label">Photos:</span>
-              <span class="detail-value">${data.photoCount}photos</span>
+              <span class="detail-value">${data.photoCount} photos</span>
+            </div>
+            <div class="detail-row">
+              <span class="detail-label">Email:</span>
+              <span class="detail-value">${data.senderEmail}</span>
             </div>
           </div>
 
