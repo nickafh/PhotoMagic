@@ -227,7 +227,7 @@ export function buildProposalEmail(data: {
     ? `<p style="margin-top: 16px; padding: 12px; background-color: #f3f4f6; border-left: 4px solid #002349; border-radius: 4px;"><strong>Note:</strong> ${data.note}</p>`
     : "";
 
-  const subject = `PhotoMagic Gallery Ready for Review: ${data.address}`;
+  const subject = `PhotoMagic Order Proposal: ${data.address}`;
 
   const body = `
     <!DOCTYPE html>
@@ -264,7 +264,6 @@ export function buildProposalEmail(data: {
 
           <p>Once approved, our PhotoMagic team will download the images to Egnyte and alert our Listings team.</p>
 
-          <p><strong>Review your gallery:</strong></p>
           <a href="${viewUrl}" class="button">Review Gallery</a>
 
           <p style="margin-top: 30px;">Thank you!</p>
