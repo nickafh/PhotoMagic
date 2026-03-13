@@ -77,11 +77,11 @@ export async function POST(req: Request, ctx: Ctx) {
       const baseUrl = process.env.NEXTAUTH_URL || "http://localhost:3000";
       const { subject, body: emailBody } = buildProposalEmail({
         address: listingWithUser.address,
-        proposerName: user.name || "Listings Team",
-        proposerEmail: user.email,
+        advisorName: recipient.name || "",
         photoCount: orderedPhotoIds.length,
         listingId: id,
         baseUrl,
+        note,
       });
 
       await sendEmail({ to: recipient.email, subject, body: emailBody });

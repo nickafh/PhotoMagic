@@ -215,15 +215,19 @@ export function buildApprovalEmail(data: {
 
 export function buildProposalEmail(data: {
   address: string;
-  proposerName: string;
-  proposerEmail: string;
+  advisorName: string;
   photoCount: number;
   listingId: string;
   baseUrl: string;
+  note?: string;
 }) {
   const viewUrl = `${data.baseUrl}/listing/${data.listingId}`;
+  const greeting = data.advisorName ? `Hi ${data.advisorName},` : "Hi,";
+  const noteSection = data.note
+    ? `<p style="margin-top: 16px; padding: 12px; background-color: #f3f4f6; border-left: 4px solid #002349; border-radius: 4px;"><strong>Note:</strong> ${data.note}</p>`
+    : "";
 
-  const subject = `PhotoMagic Order Proposal: ${data.address}`;
+  const subject = `PhotoMagic Gallery Ready for Review: ${data.address}`;
 
   const body = `
     <!DOCTYPE html>
@@ -234,43 +238,38 @@ export function buildProposalEmail(data: {
         .container { max-width: 600px; margin: 0 auto; padding: 20px; }
         .header { background-color: #002349; color: white; padding: 20px; border-radius: 8px 8px 0 0; }
         .content { background-color: #f9fafb; padding: 20px; border: 1px solid #e5e7eb; border-top: none; border-radius: 0 0 8px 8px; }
-        .details { margin: 20px 0; }
-        .detail-row { display: flex; padding: 8px 0; border-bottom: 1px solid #e5e7eb; }
-        .detail-label { font-weight: 600; width: 120px; color: #6b7280; }
-        .detail-value { color: #111827; }
-        .button { display: inline-block; background-color: #002349; color: white !important; text-decoration: none; padding: 12px 24px; border-radius: 6px; font-weight: 600; margin-top: 20px; }
+        .button { display: inline-block; background-color: #002349; color: white !important; text-decoration: none; padding: 12px 24px; border-radius: 6px; font-weight: 600; margin-top: 10px; }
+        ul { padding-left: 20px; }
+        li { margin-bottom: 8px; }
       </style>
     </head>
     <body>
       <div class="container">
         <div class="header">
-          <h1 style="margin: 0; font-size: 24px;">PhotoMagic Order Proposal</h1>
+          <h1 style="margin: 0; font-size: 24px;">PhotoMagic Gallery Ready</h1>
         </div>
         <div class="content">
-          <p>The listings team has proposed a new photo order for your listing. Please review and approve or request changes.</p>
+          <p>${greeting}</p>
 
-          <div class="details">
-            <div class="detail-row">
-              <span class="detail-label">Property:</span>
-              <span class="detail-value">${data.address}</span>
-            </div>
-            <div class="detail-row">
-              <span class="detail-label">Proposed by:</span>
-              <span class="detail-value">${data.proposerName}</span>
-            </div>
-            <div class="detail-row">
-              <span class="detail-label">Photos:</span>
-              <span class="detail-value">${data.photoCount} photos</span>
-            </div>
-            <div class="detail-row">
-              <span class="detail-label">Email:</span>
-              <span class="detail-value">${process.env.LISTINGS_TEAM_EMAIL || ""}</span>
-            </div>
-          </div>
+          <p>Your PhotoMagic gallery for <strong>${data.address}</strong> is ready for review.</p>
 
-          <a href="${viewUrl}" class="button">Review Proposal</a>
+          ${noteSection}
 
-          <p style="margin-top: 30px; font-size: 14px; color: #6b7280;">
+          <p><strong>A few quick steps:</strong></p>
+          <ul>
+            <li>Easily reorganize photos by dragging and dropping photos to change the order from your computer or phone.</li>
+            <li>See a photo you don't want to use? Click the red X to move it to the Do Not Use folder, which will be added to Egnyte.</li>
+            <li>When you're finished, click Approved.</li>
+          </ul>
+
+          <p>Once approved, our PhotoMagic team will download the images to Egnyte and alert our Listings team.</p>
+
+          <p><strong>Review your gallery:</strong></p>
+          <a href="${viewUrl}" class="button">Review Gallery</a>
+
+          <p style="margin-top: 30px;">Thank you!</p>
+
+          <p style="margin-top: 20px; font-size: 14px; color: #6b7280;">
             This email was sent from PhotoMagic. Please do not reply directly to this email.
           </p>
         </div>
