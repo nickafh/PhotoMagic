@@ -82,7 +82,6 @@ export async function POST(req: Request, ctx: Ctx) {
         photoCount: orderedPhotoIds.length,
         listingId: id,
         baseUrl,
-        senderEmail: user.email,
       });
 
       await sendEmail({ to: recipient.email, subject, body: emailBody });

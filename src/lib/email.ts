@@ -152,12 +152,11 @@ export function buildApprovalEmail(data: {
   approverName: string;
   photoCount: number;
   baseUrl: string;
-  senderEmail: string;
 }) {
   const viewUrl = `${data.baseUrl}/listing/${data.listingId}`;
   const downloadUrl = `${data.baseUrl}/api/listings/${data.listingId}/downloads`;
 
-  const subject = `Your Listing Has Been Approved: ${data.listingAddress}`;
+  const subject = `Photo Arrangement Approved: ${data.listingAddress}`;
 
   const body = `
     <!DOCTYPE html>
@@ -172,7 +171,7 @@ export function buildApprovalEmail(data: {
         .detail-row { display: flex; padding: 8px 0; border-bottom: 1px solid #e5e7eb; }
         .detail-label { font-weight: 600; width: 120px; color: #6b7280; }
         .detail-value { color: #111827; }
-        .button { display: inline-block; background-color: #16a34a; color: white !important; text-decoration: none; padding: 12px 24px; border-radius: 6px; font-weight: 600; margin-top: 20px; margin-right: 10px; }
+        .button { display: inline-block; background-color: #002349; color: white !important; text-decoration: none; padding: 12px 24px; border-radius: 6px; font-weight: 600; margin-top: 20px; margin-right: 10px; }
         .button-secondary { background-color: #6b7280; }
         .success-icon { font-size: 48px; margin-bottom: 10px; }
       </style>
@@ -183,7 +182,7 @@ export function buildApprovalEmail(data: {
           <h1 style="margin: 0; font-size: 24px;">✓ Listing Approved</h1>
         </div>
         <div class="content">
-          <p>Great news! Your photo arrangement has been reviewed and approved by the listings team.</p>
+          <p>Great news! The photo arrangement has been reviewed and approved.</p>
 
           <div class="details">
             <div class="detail-row">
@@ -198,13 +197,9 @@ export function buildApprovalEmail(data: {
               <span class="detail-label">Reviewed by:</span>
               <span class="detail-value">${data.approverName}</span>
             </div>
-            <div class="detail-row">
-              <span class="detail-label">Email:</span>
-              <span class="detail-value">${data.senderEmail}</span>
-            </div>
           </div>
 
-          <a href="${viewUrl}" class="button">View Listing</a>
+          <a href="${viewUrl}" class="button">View Photos</a>
 
           <p style="margin-top: 30px; font-size: 14px; color: #6b7280;">
             This email was sent from PhotoMagic. Please do not reply directly to this email.
@@ -225,7 +220,6 @@ export function buildProposalEmail(data: {
   photoCount: number;
   listingId: string;
   baseUrl: string;
-  senderEmail: string;
 }) {
   const viewUrl = `${data.baseUrl}/listing/${data.listingId}`;
 
@@ -270,7 +264,7 @@ export function buildProposalEmail(data: {
             </div>
             <div class="detail-row">
               <span class="detail-label">Email:</span>
-              <span class="detail-value">${data.senderEmail}</span>
+              <span class="detail-value">${process.env.LISTINGS_TEAM_EMAIL || ""}</span>
             </div>
           </div>
 
@@ -363,7 +357,6 @@ export function buildSubmissionEmail(data: {
   submitterEmail: string;
   photoCount: number;
   baseUrl: string;
-  senderEmail: string;
 }) {
   const reviewUrl = `${data.baseUrl}/admin/submissions/${data.listingId}`;
 
