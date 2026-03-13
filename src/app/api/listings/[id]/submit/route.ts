@@ -85,6 +85,7 @@ export async function POST(_req: Request, ctx: Ctx) {
         submitterEmail: user.email,
         photoCount: activePhotoCount,
         baseUrl,
+        senderEmail: user.email,
       });
 
       await sendEmail({
