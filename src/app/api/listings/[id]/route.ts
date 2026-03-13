@@ -113,6 +113,7 @@ export async function PATCH(req: Request, ctx: Ctx) {
         approverName: user.name || "Listings Team",
         photoCount: activePhotoCount,
         baseUrl,
+        senderEmail: user.email || "",
       });
 
       await sendEmail({

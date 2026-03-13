@@ -71,6 +71,7 @@ export async function POST(req: Request, ctx: Ctx) {
             approverName: user.name || "Listings Team",
             photoCount: activePhotoCount,
             baseUrl,
+            senderEmail: user.email || "",
           });
           await sendEmail({ to: owner.email, subject, body: emailBody });
         }
@@ -82,6 +83,7 @@ export async function POST(req: Request, ctx: Ctx) {
           approverName: user.name || "Advisor",
           photoCount: activePhotoCount,
           baseUrl,
+          senderEmail: user.email || "",
         });
 
         const proposer = await getUserById(submission.submittedByUserId);
