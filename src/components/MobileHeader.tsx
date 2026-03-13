@@ -33,8 +33,11 @@ export default function MobileHeader({ title, status }: MobileHeaderProps) {
             >
               <span className="material-symbols-outlined text-[22px]">menu</span>
             </button>
-            <h1 className="text-lg font-display text-white tracking-wide truncate max-w-[180px]">
-              {title}
+            <h1
+              className="text-lg text-white tracking-wide truncate max-w-[180px]"
+              style={{ fontFamily: "'Benton Sans', sans-serif" }}
+            >
+              PhotoMagic
             </h1>
           </div>
           <div className="flex items-center gap-2">
