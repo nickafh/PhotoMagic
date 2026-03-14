@@ -96,7 +96,7 @@ export default function CreateListingModal({
             <button
               type="submit"
               disabled={loading || !address.trim()}
-              className="flex-1 px-4 py-2.5 bg-amber-600 text-white rounded-xl hover:bg-amber-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:focus-visible:ring-offset-gray-800 active:bg-amber-800 transition-colors font-medium disabled:opacity-50 flex items-center justify-center gap-2"
+              className="flex-1 px-4 py-2.5 bg-gold text-white rounded-xl hover:bg-gold/90 focus:outline-none focus-visible:ring-2 focus-visible:ring-gold focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:focus-visible:ring-offset-gray-800 active:bg-gold/80 transition-colors font-medium disabled:opacity-50 flex items-center justify-center gap-2"
             >
               {loading ? (
                 <>

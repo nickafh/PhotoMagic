@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { getAuthenticatedUser } from "@/lib/auth-helpers";
-import { getListingWithUser, updateListing, createSubmission } from "@/lib/store";
+import { getListingWithUser, updateListing, createSubmission, getListingsTeamMembers } from "@/lib/store";
 import { canModifyListing } from "@/lib/permissions";
 import { sendEmail, buildSubmissionEmail } from "@/lib/email";
 
@@ -73,29 +73,31 @@ export async function POST(_req: Request, ctx: Ctx) {
     console.error("Failed to create submission snapshot:", err);
   }
 
-  // Send notification email
-  const listingsTeamEmail = process.env.LISTINGS_TEAM_EMAIL;
-  if (listingsTeamEmail) {
-    try {
-      const baseUrl = process.env.NEXTAUTH_URL || "http://localhost:3000";
-      const { subject, body } = buildSubmissionEmail({
-        listingAddress: listingWithUser.address,
-        listingId: listingWithUser.id,
-        submitterName: user.name || "Unknown",
-        submitterEmail: user.email,
-        photoCount: activePhotoCount,
-        baseUrl,
-      });
+  // Send notification email to all LISTINGS and ADMIN users
+  try {
+    const teamMembers = await getListingsTeamMembers();
+    const baseUrl = process.env.NEXTAUTH_URL || "http://localhost:3000";
+    const { subject, body } = buildSubmissionEmail({
+      listingAddress: listingWithUser.address,
+      listingId: listingWithUser.id,
+      submitterName: user.name || "Unknown",
+      submitterEmail: user.email,
+      photoCount: activePhotoCount,
+      baseUrl,
+    });
 
-      await sendEmail({
-        to: listingsTeamEmail,
-        subject,
-        body,
-      });
-    } catch (error) {
-      // Log error but don't fail the submission
-      console.error("Failed to send notification email:", error);
+    for (const member of teamMembers) {
+      if (member.email !== user.email) {
+        await sendEmail({
+          to: member.email,
+          subject,
+          body,
+        });
+      }
     }
+  } catch (error) {
+    // Log error but don't fail the submission
+    console.error("Failed to send notification email:", error);
   }
 
   return NextResponse.json(updated);

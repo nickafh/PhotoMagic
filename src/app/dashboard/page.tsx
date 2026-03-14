@@ -74,7 +74,7 @@ export default function DashboardPage() {
         <button
           type="button"
           onClick={() => setShowCreateModal(true)}
-          className="flex items-center gap-2 px-4 py-2.5 bg-amber-600 text-white rounded-xl hover:bg-amber-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 focus-visible:ring-offset-2 focus-visible:ring-offset-gray-50 dark:focus-visible:ring-offset-gray-900 active:bg-amber-800 transition-colors font-medium shadow-sm"
+          className="flex items-center gap-2 px-4 py-2.5 bg-gold text-white rounded-xl hover:bg-gold/90 focus:outline-none focus-visible:ring-2 focus-visible:ring-gold focus-visible:ring-offset-2 focus-visible:ring-offset-gray-50 dark:focus-visible:ring-offset-gray-900 active:bg-gold/80 transition-colors font-medium shadow-sm"
         >
           <span className="material-symbols-outlined text-xl">add</span>
           Create Listing
@@ -112,7 +112,7 @@ export default function DashboardPage() {
             <button
               type="button"
               onClick={() => setShowCreateModal(true)}
-              className="mt-6 px-6 py-2.5 bg-amber-600 text-white rounded-xl hover:bg-amber-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 focus-visible:ring-offset-2 active:bg-amber-800 transition-colors font-medium shadow-sm"
+              className="mt-6 px-6 py-2.5 bg-gold text-white rounded-xl hover:bg-gold/90 focus:outline-none focus-visible:ring-2 focus-visible:ring-gold focus-visible:ring-offset-2 active:bg-gold/80 transition-colors font-medium shadow-sm"
             >
               Create Your First Listing
             </button>
@@ -130,7 +130,7 @@ export default function DashboardPage() {
       <button
         type="button"
         onClick={() => setShowCreateModal(true)}
-        className="md:hidden fixed bottom-20 right-4 z-40 w-14 h-14 bg-amber-600 hover:bg-amber-700 active:bg-amber-800 text-white rounded-full shadow-lg shadow-amber-600/30 flex items-center justify-center transition-colors"
+        className="md:hidden fixed bottom-20 right-4 z-40 w-14 h-14 bg-gold hover:bg-gold/90 active:bg-gold/80 text-white rounded-full shadow-lg shadow-gold/30 flex items-center justify-center transition-colors"
         aria-label="Create listing"
       >
         <span className="material-symbols-outlined text-2xl">add</span>

@@ -22,8 +22,8 @@ export default function SubmitModal({
       <div className="relative bg-white dark:bg-gray-800 rounded-2xl shadow-xl w-full max-w-md mx-4 max-h-[90vh] overflow-y-auto">
         <div className="p-6">
           <div className="flex justify-center mb-4">
-            <div className="w-12 h-12 bg-amber-100 dark:bg-amber-900/30 rounded-full flex items-center justify-center">
-              <span className="material-symbols-outlined text-2xl text-amber-600">
+            <div className="w-12 h-12 bg-gold/10 dark:bg-gold/20 rounded-full flex items-center justify-center">
+              <span className="material-symbols-outlined text-2xl text-gold">
                 send
               </span>
             </div>
@@ -69,7 +69,7 @@ export default function SubmitModal({
               type="button"
               onClick={onSubmit}
               disabled={isSubmitting}
-              className="flex-1 px-4 py-2.5 bg-amber-600 text-white rounded-lg hover:bg-amber-700 transition-colors font-medium disabled:opacity-50 flex items-center justify-center gap-2"
+              className="flex-1 px-4 py-2.5 bg-gold text-white rounded-lg hover:bg-gold/90 transition-colors font-medium disabled:opacity-50 flex items-center justify-center gap-2"
             >
               {isSubmitting ? (
                 <>

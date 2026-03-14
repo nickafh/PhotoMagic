@@ -697,7 +697,7 @@ export default function ListingPage() {
           </div>
           <div className="h-2 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
             <div
-              className="h-full bg-amber-500 dark:bg-amber-600 transition-all duration-300 ease-out"
+              className="h-full bg-gold transition-all duration-300 ease-out"
               style={{
                 width: `${(uploadProgress.current / uploadProgress.total) * 100}%`,
               }}
