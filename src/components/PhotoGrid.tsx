@@ -62,6 +62,7 @@ export default function PhotoGrid({
   const [localIds, setLocalIds] = useState<string[]>(activePhotoIds);
   const [activeId, setActiveId] = useState<UniqueIdentifier | null>(null);
   const [overId, setOverId] = useState<UniqueIdentifier | null>(null);
+  const [enlargedId, setEnlargedId] = useState<string | null>(null);
   const draggingRef = useRef(false);
   const preloadedRef = useRef(false);
 
@@ -144,6 +145,7 @@ export default function PhotoGrid({
   }
 
   return (
+    <>
     <DndContext
       sensors={sensors}
       onDragStart={handleDragStart}
@@ -162,6 +164,7 @@ export default function PhotoGrid({
               isDragging={id === String(activeId)}
               isDropTarget={id === String(overId)}
               onExclude={onToggleExclude ? () => onToggleExclude(id) : undefined}
+              onEnlarge={() => setEnlargedId(id)}
             />
           ))}
         </div>
@@ -177,6 +180,23 @@ export default function PhotoGrid({
         ) : null}
       </DragOverlay>
     </DndContext>
+
+    {enlargedId && (
+      <PhotoLightbox
+        listingId={listingId}
+        photoId={enlargedId}
+        index={localIds.indexOf(enlargedId) + 1}
+        totalCount={localIds.length}
+        onClose={() => setEnlargedId(null)}
+        onPrev={localIds.indexOf(enlargedId) > 0
+          ? () => setEnlargedId(localIds[localIds.indexOf(enlargedId) - 1])
+          : undefined}
+        onNext={localIds.indexOf(enlargedId) < localIds.length - 1
+          ? () => setEnlargedId(localIds[localIds.indexOf(enlargedId) + 1])
+          : undefined}
+      />
+    )}
+    </>
   );
 }
 
@@ -187,6 +207,7 @@ type SortableTileProps = {
   isDragging: boolean;
   isDropTarget: boolean;
   onExclude?: () => void;
+  onEnlarge?: () => void;
 };
 
 const SortableTile = memo(function SortableTile({
@@ -196,6 +217,7 @@ const SortableTile = memo(function SortableTile({
   isDragging,
   isDropTarget,
   onExclude,
+  onEnlarge,
 }: SortableTileProps) {
   const [isHovered, setIsHovered] = useState(false);
   const isMobile = useIsMobile();
@@ -255,6 +277,32 @@ const SortableTile = memo(function SortableTile({
           title="Mark as Do Not Use"
         >
           <span className="material-symbols-outlined text-white text-xs md:text-base">close</span>
+        </button>
+      )}
+
+      {/* Enlarge button - always visible on mobile, hover-reveal on desktop */}
+      {onEnlarge && (
+        <button
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation();
+            onEnlarge();
+          }}
+          onPointerDown={(e) => e.stopPropagation()}
+          className={`
+            absolute z-20
+            top-1 right-1 w-6 h-6
+            md:top-2 md:right-2 md:w-8 md:h-8
+            flex items-center justify-center
+            bg-white/90 hover:bg-white backdrop-blur-sm
+            rounded-full
+            border-2 border-white/90 shadow-lg
+            transition-all duration-200
+            ${isMobile ? "opacity-90" : isHovered ? "opacity-100 scale-100" : "opacity-0 scale-90"}
+          `}
+          title="Enlarge photo"
+        >
+          <span className="material-symbols-outlined text-slate-700 text-xs md:text-base">zoom_in</span>
         </button>
       )}
 
@@ -338,3 +386,102 @@ const OverlayTile = memo(function OverlayTile({ index, listingId, photoId }: Ove
     </div>
   );
 });
+
+/* ── Photo Lightbox ── */
+
+type PhotoLightboxProps = {
+  listingId: string;
+  photoId: string;
+  index: number;
+  totalCount: number;
+  onClose: () => void;
+  onPrev?: () => void;
+  onNext?: () => void;
+};
+
+function PhotoLightbox({
+  listingId,
+  photoId,
+  index,
+  totalCount,
+  onClose,
+  onPrev,
+  onNext,
+}: PhotoLightboxProps) {
+  useEffect(() => {
+    const handleKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+      if (e.key === "ArrowLeft" && onPrev) onPrev();
+      if (e.key === "ArrowRight" && onNext) onNext();
+    };
+    window.addEventListener("keydown", handleKey);
+    return () => window.removeEventListener("keydown", handleKey);
+  }, [onClose, onPrev, onNext]);
+
+  // Prevent body scroll while lightbox is open
+  useEffect(() => {
+    document.body.style.overflow = "hidden";
+    return () => { document.body.style.overflow = ""; };
+  }, []);
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center">
+      {/* Backdrop */}
+      <div
+        className="absolute inset-0 bg-black/80 backdrop-blur-sm animate-fade-in"
+        onClick={onClose}
+      />
+
+      {/* Close button */}
+      <button
+        type="button"
+        onClick={onClose}
+        className="absolute top-4 right-4 z-50 w-10 h-10 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 backdrop-blur-sm transition-colors"
+      >
+        <span className="material-symbols-outlined text-white text-2xl">close</span>
+      </button>
+
+      {/* Prev arrow */}
+      {onPrev && (
+        <button
+          type="button"
+          onClick={onPrev}
+          className="absolute left-4 z-50 w-12 h-12 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 backdrop-blur-sm transition-colors"
+        >
+          <span className="material-symbols-outlined text-white text-3xl">chevron_left</span>
+        </button>
+      )}
+
+      {/* Next arrow */}
+      {onNext && (
+        <button
+          type="button"
+          onClick={onNext}
+          className="absolute right-4 z-50 w-12 h-12 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 backdrop-blur-sm transition-colors"
+        >
+          <span className="material-symbols-outlined text-white text-3xl">chevron_right</span>
+        </button>
+      )}
+
+      {/* Image container */}
+      <div className="relative z-10 max-w-[90vw] max-h-[90vh] animate-scale-in">
+        <img
+          src={`/api/photos/${photoId}?listingId=${listingId}`}
+          alt={`Photo ${index}`}
+          className="max-w-full max-h-[90vh] object-contain rounded-lg shadow-2xl"
+          draggable={false}
+        />
+
+        {/* Number badge */}
+        <div className="photo-badge bottom-3 right-3 w-10 h-10 text-base">
+          {index}
+        </div>
+
+        {/* Counter */}
+        <div className="absolute top-3 left-3 px-3 py-1 rounded-full bg-black/50 backdrop-blur-sm text-white text-sm font-medium">
+          {index} / {totalCount}
+        </div>
+      </div>
+    </div>
+  );
+}

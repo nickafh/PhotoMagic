@@ -198,6 +198,7 @@ export function buildProposalEmail(data: {
           <p><strong>A few quick steps:</strong></p>
           <ul>
             <li>Easily reorganize photos by dragging and dropping photos to change the order from your computer or phone.</li>
+            <li>Want to make a photo bigger? Click the Magnifying glass to enlarge.</li>
             <li>See a photo you don't want to use? Click the red X to move it to the Do Not Use folder, which will be added to Egnyte.</li>
             <li>When you're finished, click Approved.</li>
           </ul>
