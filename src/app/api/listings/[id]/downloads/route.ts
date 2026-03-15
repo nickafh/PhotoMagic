@@ -5,7 +5,7 @@ import { toLegacyListing, getListingWithUser, getPhotoFile, getSubmissionById, g
 import { canDownloadListing } from "@/lib/permissions";
 import { zipFilenameForListing } from "@/lib/zip";
 import { pad3, sanitizeAddress } from "@/lib/sanitize";
-import { downloadStream } from "@/lib/blob";
+import { downloadStream, getBlobSize } from "@/lib/blob";
 import archiver from "archiver";
 
 export const runtime = "nodejs";
@@ -126,6 +126,23 @@ export async function GET(req: Request, ctx: Ctx) {
       return NextResponse.json({ error: "No photos available to download" }, { status: 404 });
     }
 
+    // Fetch all blob sizes in parallel (lightweight HEAD requests, no data downloaded)
+    const sizes = await Promise.all(
+      photoEntries.map((e) => getBlobSize(e.blobPath).catch(() => 0))
+    );
+
+    // Calculate ZIP size for store (level 0): local header + data + data descriptor per file + central dir + end record
+    // ZIP local file header: 30 bytes + filename length
+    // Data descriptor: 16 bytes per entry
+    // Central directory entry: 46 bytes + filename length
+    // End of central directory: 22 bytes
+    let zipSize = 22; // end of central directory
+    for (let i = 0; i < photoEntries.length; i++) {
+      const nameLen = Buffer.byteLength(photoEntries[i].name, "utf8");
+      zipSize += 30 + nameLen + sizes[i] + 16; // local header + data + descriptor
+      zipSize += 46 + nameLen; // central directory entry
+    }
+
     // Stream: photos flow from Azure Blob -> archiver -> response (no full buffering)
     const archive = archiver("zip", { zlib: { level: 0 } }); // level 0: images are already compressed
     const passThrough = new PassThrough();
@@ -151,6 +168,7 @@ export async function GET(req: Request, ctx: Ctx) {
       headers: {
         "Content-Type": "application/zip",
         "Content-Disposition": `attachment; filename="${filename}"`,
+        "Content-Length": String(zipSize),
       },
     });
   } catch (err) {

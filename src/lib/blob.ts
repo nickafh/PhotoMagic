@@ -62,6 +62,14 @@ export async function downloadStream(blobPath: string): Promise<Readable> {
   return downloadResponse.readableStreamBody as Readable;
 }
 
+/** Get blob size in bytes without downloading it */
+export async function getBlobSize(blobPath: string): Promise<number> {
+  const container = getContainerClient();
+  const blockBlobClient = container.getBlockBlobClient(blobPath);
+  const props = await blockBlobClient.getProperties();
+  return props.contentLength ?? 0;
+}
+
 export async function deleteBlob(blobPath: string): Promise<void> {
   const container = getContainerClient();
   const blockBlobClient = container.getBlockBlobClient(blobPath);
