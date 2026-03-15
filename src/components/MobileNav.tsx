@@ -64,7 +64,9 @@ export default function MobileNav() {
       <div className="px-2 py-2 flex justify-around items-center pb-safe">
         {visibleItems.map((item) => {
           const isActive =
-            pathname === item.href || pathname.startsWith(item.href + "/");
+            item.href === "/dashboard"
+              ? pathname === "/dashboard"
+              : pathname === item.href || pathname.startsWith(item.href + "/");
           return (
             <Link
               key={item.href}
