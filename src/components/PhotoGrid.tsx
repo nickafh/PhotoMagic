@@ -182,22 +182,25 @@ export default function PhotoGrid({
       </DragOverlay>
     </DndContext>
 
-    {enlargedId && createPortal(
-      <PhotoLightbox
-        listingId={listingId}
-        photoId={enlargedId}
-        index={localIds.indexOf(enlargedId) + 1}
-        totalCount={localIds.length}
-        onClose={() => setEnlargedId(null)}
-        onPrev={localIds.indexOf(enlargedId) > 0
-          ? () => setEnlargedId(localIds[localIds.indexOf(enlargedId) - 1])
-          : undefined}
-        onNext={localIds.indexOf(enlargedId) < localIds.length - 1
-          ? () => setEnlargedId(localIds[localIds.indexOf(enlargedId) + 1])
-          : undefined}
-      />,
-      document.body
-    )}
+    {enlargedId && (() => {
+      const idx = localIds.indexOf(enlargedId);
+      const prevId = idx > 0 ? localIds[idx - 1] : undefined;
+      const nextId = idx < localIds.length - 1 ? localIds[idx + 1] : undefined;
+      return createPortal(
+        <PhotoLightbox
+          listingId={listingId}
+          photoId={enlargedId}
+          index={idx + 1}
+          totalCount={localIds.length}
+          prevPhotoId={prevId}
+          nextPhotoId={nextId}
+          onClose={() => setEnlargedId(null)}
+          onPrev={prevId ? () => setEnlargedId(prevId) : undefined}
+          onNext={nextId ? () => setEnlargedId(nextId) : undefined}
+        />,
+        document.body
+      );
+    })()}
     </>
   );
 }
@@ -396,6 +399,8 @@ type PhotoLightboxProps = {
   photoId: string;
   index: number;
   totalCount: number;
+  prevPhotoId?: string;
+  nextPhotoId?: string;
   onClose: () => void;
   onPrev?: () => void;
   onNext?: () => void;
@@ -406,6 +411,8 @@ function PhotoLightbox({
   photoId,
   index,
   totalCount,
+  prevPhotoId,
+  nextPhotoId,
   onClose,
   onPrev,
   onNext,
@@ -419,6 +426,16 @@ function PhotoLightbox({
     window.addEventListener("keydown", handleKey);
     return () => window.removeEventListener("keydown", handleKey);
   }, [onClose, onPrev, onNext]);
+
+  // Preload adjacent full-res images so navigation feels instant
+  useEffect(() => {
+    [prevPhotoId, nextPhotoId].forEach((id) => {
+      if (id) {
+        const img = new window.Image();
+        img.src = `/api/photos/${id}?listingId=${listingId}`;
+      }
+    });
+  }, [prevPhotoId, nextPhotoId, listingId]);
 
   // Prevent body scroll while lightbox is open
   useEffect(() => {
