@@ -1,11 +1,11 @@
 import { NextResponse } from "next/server";
-import { PassThrough } from "stream";
+import { PassThrough, Readable } from "stream";
 import { getAuthenticatedUser } from "@/lib/auth-helpers";
-import { getListingById, getListingWithUser, getPhotoFile, getSubmissionById, getLatestSubmissionForListing } from "@/lib/store";
+import { toLegacyListing, getListingWithUser, getPhotoFile, getSubmissionById, getLatestSubmissionForListing } from "@/lib/store";
 import { canDownloadListing } from "@/lib/permissions";
 import { zipFilenameForListing } from "@/lib/zip";
 import { pad3, sanitizeAddress } from "@/lib/sanitize";
-import { downloadToBuffer } from "@/lib/blob";
+import { downloadStream } from "@/lib/blob";
 import archiver from "archiver";
 
 export const runtime = "nodejs";
@@ -38,10 +38,7 @@ export async function GET(req: Request, ctx: Ctx) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
-    const listing = await getListingById(id);
-    if (!listing) {
-      return NextResponse.json({ error: "Listing not found" }, { status: 404 });
-    }
+    const listing = toLegacyListing(listingWithUser);
 
     const safe = sanitizeAddress(listing.address || listing.sanitizedAddress || "listing");
     const filename = zipFilenameForListing(listing);
@@ -100,66 +97,60 @@ export async function GET(req: Request, ctx: Ctx) {
       }
     }
 
-    // Download all photo buffers first
-    const photoBuffers: { name: string; buf: Buffer }[] = [];
+    // Resolve photo metadata (blob paths + names) before streaming
+    const photoEntries: { name: string; blobPath: string }[] = [];
 
     for (let i = 0; i < includedPhotos.length; i++) {
       const photoId = includedPhotos[i];
       const file = await getPhotoFile(listing.id, photoId);
       if (!file) continue;
-
       const ext = file.meta.ext || "jpg";
-      const name = `${pad3(i + 1)}_${safe}.${ext}`;
-      try {
-        const buf = await downloadToBuffer(file.blobPath);
-        photoBuffers.push({ name, buf });
-      } catch (err) {
-        console.error(`Failed to download photo ${photoId}:`, err);
-      }
+      photoEntries.push({
+        name: `${pad3(i + 1)}_${safe}.${ext}`,
+        blobPath: file.blobPath,
+      });
     }
 
     for (let i = 0; i < excludedPhotos.length; i++) {
       const photoId = excludedPhotos[i];
       const file = await getPhotoFile(listing.id, photoId);
       if (!file) continue;
-
       const ext = file.meta.ext || "jpg";
-      const name = `do_not_use/${pad3(i + 1)}_${safe}.${ext}`;
-      try {
-        const buf = await downloadToBuffer(file.blobPath);
-        photoBuffers.push({ name, buf });
-      } catch (err) {
-        console.error(`Failed to download photo ${photoId}:`, err);
-      }
+      photoEntries.push({
+        name: `do_not_use/${pad3(i + 1)}_${safe}.${ext}`,
+        blobPath: file.blobPath,
+      });
     }
 
-    if (photoBuffers.length === 0) {
+    if (photoEntries.length === 0) {
       return NextResponse.json({ error: "No photos available to download" }, { status: 404 });
     }
 
-    // Build the ZIP archive by piping through a PassThrough stream
-    const archive = archiver("zip", { zlib: { level: 9 } });
+    // Stream: photos flow from Azure Blob -> archiver -> response (no full buffering)
+    const archive = archiver("zip", { zlib: { level: 0 } }); // level 0: images are already compressed
     const passThrough = new PassThrough();
     archive.pipe(passThrough);
 
-    for (const { name, buf } of photoBuffers) {
-      archive.append(buf, { name });
-    }
-
-    const zipBuffer = await new Promise<Buffer>((resolve, reject) => {
-      const chunks: Buffer[] = [];
-      passThrough.on("data", (chunk: Buffer) => chunks.push(chunk));
-      passThrough.on("end", () => resolve(Buffer.concat(chunks)));
-      passThrough.on("error", reject);
-      archive.on("error", reject);
+    // Append each photo as a stream from Azure Blob (one at a time, never all in memory)
+    (async () => {
+      for (const entry of photoEntries) {
+        try {
+          const stream = await downloadStream(entry.blobPath);
+          archive.append(stream, { name: entry.name });
+        } catch (err) {
+          console.error(`Failed to stream photo ${entry.blobPath}:`, err);
+        }
+      }
       archive.finalize();
-    });
+    })();
 
-    return new NextResponse(new Uint8Array(zipBuffer), {
+    // Convert Node stream to Web ReadableStream for the response
+    const webStream = Readable.toWeb(passThrough) as ReadableStream;
+
+    return new Response(webStream, {
       headers: {
         "Content-Type": "application/zip",
         "Content-Disposition": `attachment; filename="${filename}"`,
-        "Content-Length": String(zipBuffer.byteLength),
       },
     });
   } catch (err) {
