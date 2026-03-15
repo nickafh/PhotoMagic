@@ -57,15 +57,6 @@ export default function ListingShell({
           {actions}
         </div>
 
-        {/* Mobile Subheader */}
-        {status && (
-          <div className="md:hidden px-4 py-2 bg-white dark:bg-[#121B26] border-b border-gray-200 dark:border-gray-800">
-            <span className="text-[10px] font-bold text-text-grey dark:text-gray-400 tracking-wider uppercase">
-              {/* Photo count will be passed via children or context */}
-            </span>
-          </div>
-        )}
-
         {/* Main Content */}
         <div className="flex-1 overflow-y-auto p-3 md:p-8 pb-36 md:pb-8 custom-scrollbar">
           <div className="animate-fade-in">
@@ -75,7 +66,7 @@ export default function ListingShell({
 
         {/* Mobile Bottom Actions */}
         {mobileActions && (
-          <div className="md:hidden fixed bottom-14 left-0 right-0 p-3 bg-white/95 dark:bg-background-dark/95 backdrop-blur-md border-t border-gray-100 dark:border-gray-800 z-40 shadow-[0_-4px_20px_rgba(0,0,0,0.08)]">
+          <div className="md:hidden fixed bottom-[calc(3.5rem+env(safe-area-inset-bottom))] left-0 right-0 px-3 pb-2 pt-3 bg-white/95 dark:bg-background-dark/95 backdrop-blur-md border-t border-gray-200 dark:border-gray-700 z-40 shadow-[0_-4px_20px_rgba(0,0,0,0.12)]">
             {mobileActions}
           </div>
         )}
