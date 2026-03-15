@@ -116,13 +116,14 @@ export async function updateListing(
 
   if (!listing) return null;
 
-  // Build update data
+  // Build update data — always bump updatedAt so polling detects changes
   const updateData: {
     address?: string;
     sanitizedAddress?: string;
     title?: string;
     status?: "DRAFT" | "SUBMITTED" | "APPROVED";
-  } = {};
+    updatedAt: Date;
+  } = { updatedAt: new Date() };
 
   if (typeof patch.title === "string") {
     updateData.title = patch.title;
@@ -217,6 +218,11 @@ export async function addPhotoToListing(args: {
   await Promise.all([
     uploadOriginal(args.listingId, photo.id, ext, args.buffer),
     thumbPromise,
+    // Bump listing updatedAt so polling detects the new photo
+    prisma.listing.update({
+      where: { id: args.listingId },
+      data: { updatedAt: new Date() },
+    }),
   ]);
 
   const photoMeta: PhotoMeta = {
@@ -283,7 +289,6 @@ export async function deletePhotoFromListing(listingId: string, photoId: string)
 }
 
 export async function togglePhotoExcluded(listingId: string, photoId: string): Promise<PhotoMeta | null> {
-  // Single query: toggle excluded using raw SQL to avoid the extra findFirst round-trip
   const photo = await prisma.photo.findFirst({
     where: { id: photoId, listingId },
     select: { id: true, excluded: true },
@@ -291,10 +296,17 @@ export async function togglePhotoExcluded(listingId: string, photoId: string): P
 
   if (!photo) return null;
 
-  const updated = await prisma.photo.update({
-    where: { id: photoId },
-    data: { excluded: !photo.excluded },
-  });
+  // Toggle the photo and bump the listing's updatedAt so polling detects the change
+  const [updated] = await prisma.$transaction([
+    prisma.photo.update({
+      where: { id: photoId },
+      data: { excluded: !photo.excluded },
+    }),
+    prisma.listing.update({
+      where: { id: listingId },
+      data: { updatedAt: new Date() },
+    }),
+  ]);
 
   return {
     id: updated.id,
