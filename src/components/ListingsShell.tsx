@@ -66,7 +66,7 @@ export default function ListingShell({
 
         {/* Mobile Bottom Actions */}
         {mobileActions && (
-          <div className="md:hidden fixed bottom-[calc(3.5rem+env(safe-area-inset-bottom))] left-0 right-0 px-3 pb-2 pt-3 bg-white/95 dark:bg-background-dark/95 backdrop-blur-md border-t border-gray-200 dark:border-gray-700 z-40 shadow-[0_-4px_20px_rgba(0,0,0,0.12)]">
+          <div className="md:hidden fixed bottom-16 left-2 right-2 p-2 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md rounded-xl z-40 shadow-lg border border-gray-200 dark:border-gray-700">
             {mobileActions}
           </div>
         )}
