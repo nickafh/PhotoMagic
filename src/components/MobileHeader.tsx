@@ -64,7 +64,7 @@ export default function MobileHeader({ title, status }: MobileHeaderProps) {
                   <div className="w-8 h-8 rounded-lg bg-gold/20 flex items-center justify-center">
                     <span className="material-symbols-outlined text-gold text-lg">home_work</span>
                   </div>
-                  <span className="text-white font-display text-xl tracking-wide">PhotoMagic</span>
+                  <span className="text-white text-xl tracking-wide" style={{ fontFamily: "'Benton Sans', sans-serif" }}>PhotoMagic</span>
                 </div>
                 <button
                   onClick={() => setShowMenu(false)}

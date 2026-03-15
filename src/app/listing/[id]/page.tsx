@@ -452,7 +452,7 @@ export default function ListingPage() {
 
   return (
     <ListingShell
-      title={listing.title || listing.address}
+      title={listing.address || listing.title}
       status={listing.status as "DRAFT" | "SUBMITTED" | "APPROVED"}
       actions={
         <div className="flex items-center gap-3">
