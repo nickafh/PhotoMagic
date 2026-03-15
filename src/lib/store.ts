@@ -283,11 +283,10 @@ export async function deletePhotoFromListing(listingId: string, photoId: string)
 }
 
 export async function togglePhotoExcluded(listingId: string, photoId: string): Promise<PhotoMeta | null> {
+  // Single query: toggle excluded using raw SQL to avoid the extra findFirst round-trip
   const photo = await prisma.photo.findFirst({
-    where: {
-      id: photoId,
-      listingId,
-    },
+    where: { id: photoId, listingId },
+    select: { id: true, excluded: true },
   });
 
   if (!photo) return null;
@@ -631,30 +630,28 @@ export async function requestChangesOnSubmission(
 }
 
 export async function getListingsProposedToUser(userId: string): Promise<LegacyListing[]> {
+  // Get distinct listing IDs proposed to this user (avoids fetching duplicate listing+photo data)
   const submissions = await prisma.photoOrderSubmission.findMany({
     where: { proposedToUserId: userId },
-    include: {
-      listing: {
-        include: {
-          photos: {
-            orderBy: { sortOrder: "asc" },
-          },
-        },
-      },
-    },
+    distinct: ["listingId"],
+    select: { listingId: true },
     orderBy: { createdAt: "desc" },
   });
 
-  // Deduplicate by listing ID (multiple submissions may reference the same listing)
-  const seen = new Set<string>();
-  const listings: LegacyListing[] = [];
-  for (const sub of submissions) {
-    if (!seen.has(sub.listingId)) {
-      seen.add(sub.listingId);
-      listings.push(toLegacyListing(sub.listing));
-    }
-  }
-  return listings;
+  if (submissions.length === 0) return [];
+
+  const listingIds = submissions.map((s) => s.listingId);
+
+  const listings = await prisma.listing.findMany({
+    where: { id: { in: listingIds } },
+    include: {
+      photos: {
+        orderBy: { sortOrder: "asc" },
+      },
+    },
+  });
+
+  return listings.map(toLegacyListing);
 }
 
 export async function hasProposalForUser(listingId: string, userId: string): Promise<boolean> {

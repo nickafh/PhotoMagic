@@ -26,17 +26,12 @@ export async function GET(req: Request) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
-    const listings = await getAllListings({
-      status: status || undefined,
-      search,
-      limit,
-      offset,
-    });
+    const filterOpts = { status: status || undefined, search };
 
-    const total = await countListings({
-      status: status || undefined,
-      search,
-    });
+    const [listings, total] = await Promise.all([
+      getAllListings({ ...filterOpts, limit, offset }),
+      countListings(filterOpts),
+    ]);
 
     return NextResponse.json({ listings, total });
   }

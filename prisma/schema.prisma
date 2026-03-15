@@ -58,6 +58,8 @@ model Listing {
 
   @@index([userId])
   @@index([status])
+  @@index([userId, status])
+  @@index([updatedAt])
 }
 
 model Photo {
@@ -98,4 +100,6 @@ model PhotoOrderSubmission {
   @@index([listingId])
   @@index([status])
   @@index([proposedToUserId])
+  @@index([listingId, status])
+  @@index([createdAt])
 }

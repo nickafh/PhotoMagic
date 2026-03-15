@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { getAuthenticatedUser } from "@/lib/auth-helpers";
-import { getListingById, getListingWithUser, updateListing, deleteListing, hasProposalForUser } from "@/lib/store";
+import { toLegacyListing, getListingWithUser, updateListing, deleteListing, hasProposalForUser } from "@/lib/store";
 import { canAccessListing, canModifyListing, canDeleteListing, canReorderListing, canApproveListing } from "@/lib/permissions";
 import { sendEmail, buildApprovalEmail } from "@/lib/email";
 
@@ -39,8 +39,7 @@ export async function GET(_req: Request, ctx: Ctx) {
     }
   }
 
-  const listing = await getListingById(id);
-  return NextResponse.json(listing);
+  return NextResponse.json(toLegacyListing(listingWithUser));
 }
 
 // PATCH /api/listings/[id] - Update listing fields
