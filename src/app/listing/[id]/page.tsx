@@ -44,6 +44,7 @@ export default function ListingPage() {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const isUploading = uploadProgress !== null;
+  const lastUpdatedRef = useRef<number>(0);
 
   useEffect(() => {
     if (authStatus === "unauthenticated") {
@@ -69,6 +70,7 @@ export default function ListingPage() {
     }
     const data = (await listingRes.json()) as LegacyListing;
     setListing(data);
+    lastUpdatedRef.current = data.updatedAt;
 
     if (submissionRes.ok) {
       const subData = await submissionRes.json();
@@ -80,6 +82,45 @@ export default function ListingPage() {
     if (!id || authStatus !== "authenticated") return;
     refresh().catch(console.error);
   }, [id, refresh, authStatus]);
+
+  // Poll for changes every 10 seconds (lightweight timestamp check)
+  useEffect(() => {
+    if (!id || authStatus !== "authenticated") return;
+
+    const poll = async () => {
+      // Skip polling while uploading
+      if (uploadProgress !== null) return;
+
+      try {
+        const res = await fetch(`/api/listings/${id}/updated-at`, { cache: "no-store" });
+        if (!res.ok) return;
+        const { updatedAt } = await res.json();
+
+        if (lastUpdatedRef.current > 0 && updatedAt > lastUpdatedRef.current) {
+          // Something changed — do a full refresh
+          await refresh();
+        }
+        lastUpdatedRef.current = updatedAt;
+      } catch {
+        // Silently ignore network errors during polling
+      }
+    };
+
+    const intervalId = setInterval(poll, 10_000);
+
+    // Pause when tab is hidden, resume when visible
+    const handleVisibility = () => {
+      if (document.visibilityState === "visible") {
+        poll(); // Check immediately when tab becomes visible
+      }
+    };
+    document.addEventListener("visibilitychange", handleVisibility);
+
+    return () => {
+      clearInterval(intervalId);
+      document.removeEventListener("visibilitychange", handleVisibility);
+    };
+  }, [id, authStatus, refresh, uploadProgress]);
 
   async function uploadFiles(files: FileList | null) {
     if (!files || !files.length) return;
