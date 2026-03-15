@@ -1,6 +1,7 @@
 "use client";
 
 import React, { memo, useCallback, useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import {
   DndContext,
   DragOverlay,
@@ -181,7 +182,7 @@ export default function PhotoGrid({
       </DragOverlay>
     </DndContext>
 
-    {enlargedId && (
+    {enlargedId && createPortal(
       <PhotoLightbox
         listingId={listingId}
         photoId={enlargedId}
@@ -194,7 +195,8 @@ export default function PhotoGrid({
         onNext={localIds.indexOf(enlargedId) < localIds.length - 1
           ? () => setEnlargedId(localIds[localIds.indexOf(enlargedId) + 1])
           : undefined}
-      />
+      />,
+      document.body
     )}
     </>
   );
