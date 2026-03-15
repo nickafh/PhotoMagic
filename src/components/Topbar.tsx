@@ -12,8 +12,8 @@ export default function Topbar({ title }: { title?: string }) {
         </h2>
         {title && (
           <>
-            <span className="text-slate-300 dark:text-slate-600">/</span>
-            <span className="text-sm text-slate-500 dark:text-slate-400 truncate">
+            <span className="text-slate-300 dark:text-slate-600 text-lg">/</span>
+            <span className="text-base font-medium text-slate-600 dark:text-slate-300 truncate">
               {title}
             </span>
           </>

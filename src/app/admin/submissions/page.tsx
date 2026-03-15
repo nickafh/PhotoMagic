@@ -37,7 +37,7 @@ export default function SubmissionsPage() {
 
   return (
     <ListingShell title="Submissions">
-      <div className="p-3 md:p-8">
+      <div className="p-3 md:p-8 overflow-x-hidden">
         <div className="flex items-center gap-4 mb-6 md:mb-8">
           <Link
             href="/admin"
@@ -102,13 +102,13 @@ export default function SubmissionsPage() {
 
                     {/* Info */}
                     <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2">
-                        <h3 className="font-semibold text-gray-900 dark:text-white text-base md:text-lg truncate">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <h3 className="font-semibold text-gray-900 dark:text-white text-base md:text-lg truncate max-w-[160px] md:max-w-none">
                           {listing.address}
                         </h3>
                         {isPendingAdvisor && (
-                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-gold/10 text-gold border border-gold/30 shrink-0">
-                            <span className="material-symbols-outlined text-xs">hourglass_top</span>
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] md:text-xs font-medium bg-gold/10 text-gold border border-gold/30 shrink-0">
+                            <span className="material-symbols-outlined text-[10px] md:text-xs">hourglass_top</span>
                             Pending Advisor
                           </span>
                         )}
