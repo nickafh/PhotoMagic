@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { PassThrough, Readable } from "stream";
 import { getAuthenticatedUser } from "@/lib/auth-helpers";
-import { toLegacyListing, getListingWithUser, getPhotoFile, getSubmissionById, getLatestSubmissionForListing } from "@/lib/store";
+import { toLegacyListing, getListingWithUser, getPhotoFile } from "@/lib/store";
 import { canDownloadListing } from "@/lib/permissions";
 import { zipFilenameForListing } from "@/lib/zip";
 import { pad3, sanitizeAddress } from "@/lib/sanitize";
@@ -43,57 +43,17 @@ export async function GET(req: Request, ctx: Ctx) {
     const safe = sanitizeAddress(listing.address || listing.sanitizedAddress || "listing");
     const filename = zipFilenameForListing(listing);
 
-    // Determine photo order: use submission snapshot if available
-    const url = new URL(req.url);
-    const submissionIdParam = url.searchParams.get("submissionId");
-
-    let orderedPhotoIds: string[] | null = null;
-
-    if (submissionIdParam) {
-      const submission = await getSubmissionById(submissionIdParam);
-      if (submission && submission.listingId === id) {
-        orderedPhotoIds = submission.orderedPhotoIds;
-      }
-    }
-
-    if (!orderedPhotoIds) {
-      // Try to find latest SUBMITTED or APPROVED submission
-      const latestSubmission = await getLatestSubmissionForListing(id, {
-        status: ["SUBMITTED", "APPROVED"],
-      });
-      if (latestSubmission) {
-        orderedPhotoIds = latestSubmission.orderedPhotoIds;
-      }
-    }
-
-    // Separate included and excluded photos
+    // Use listing's photo order (sorted by DB sortOrder) — same source as the display
     const includedPhotos: string[] = [];
     const excludedPhotos: string[] = [];
 
-    // Use submission order if available, otherwise fall back to listing order
-    const photoIdList = orderedPhotoIds || listing.photoIds;
-
-    for (const photoId of photoIdList) {
+    for (const photoId of listing.photoIds) {
       const photo = listing.photos[photoId];
-      if (!photo) continue; // Skip deleted photos
+      if (!photo) continue;
       if (photo.excluded) {
         excludedPhotos.push(photoId);
       } else {
         includedPhotos.push(photoId);
-      }
-    }
-
-    // Add any photos in the listing that weren't in the submission (new photos added after submission)
-    if (orderedPhotoIds) {
-      const orderedSet = new Set(orderedPhotoIds);
-      for (const photoId of listing.photoIds) {
-        if (!orderedSet.has(photoId) && listing.photos[photoId]) {
-          if (listing.photos[photoId].excluded) {
-            excludedPhotos.push(photoId);
-          } else {
-            includedPhotos.push(photoId);
-          }
-        }
       }
     }
 

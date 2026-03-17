@@ -619,25 +619,13 @@ export async function approveSubmission(
     data: submissionData,
   });
 
-  // Sync photo sortOrder to match the approved submission's orderedPhotoIds
-  const submission = toSubmissionData(record);
-  const sortUpdates = submission.orderedPhotoIds.map((photoId, index) =>
-    prisma.photo.update({
-      where: { id: photoId },
-      data: { sortOrder: index },
-    })
-  );
-
   // Also update the listing status to APPROVED
-  await prisma.$transaction([
-    ...sortUpdates,
-    prisma.listing.update({
-      where: { id: record.listingId },
-      data: { status: "APPROVED" },
-    }),
-  ]);
+  await prisma.listing.update({
+    where: { id: record.listingId },
+    data: { status: "APPROVED" },
+  });
 
-  return submission;
+  return toSubmissionData(record);
 }
 
 export async function requestChangesOnSubmission(
