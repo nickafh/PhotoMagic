@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { getAuthenticatedUser } from "@/lib/auth-helpers";
-import { getPhotoFile, getListingWithUser, togglePhotoExcluded, hasProposalForUser } from "@/lib/store";
+import { getPhotoFile, getListingWithUser, togglePhotoExcluded, hasListingAccess } from "@/lib/store";
 import { canAccessListing, canModifyListing } from "@/lib/permissions";
 import { downloadToBuffer } from "@/lib/blob";
 
@@ -41,8 +41,8 @@ export async function GET(req: Request, ctx: Ctx) {
 
   if (!canAccessListing(mockSession as any, listingWithUser.userId)) {
     // Fallback: allow access if the user was proposed to on this listing
-    const proposedTo = await hasProposalForUser(listingId, user.id);
-    if (!proposedTo) {
+    const hasAccess = await hasListingAccess(listingId, user.id);
+    if (!hasAccess) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
   }
@@ -98,8 +98,8 @@ export async function PATCH(req: Request, ctx: Ctx) {
 
   if (!canModifyListing(mockSession as any, listingWithUser.userId)) {
     // Allow advisors who have an active proposal for this listing
-    const proposedTo = await hasProposalForUser(listingId, user.id);
-    if (!proposedTo) {
+    const hasAccess = await hasListingAccess(listingId, user.id);
+    if (!hasAccess) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
   }

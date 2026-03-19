@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { getAuthenticatedUser } from "@/lib/auth-helpers";
-import { getListingWithUser, createSubmission, getUserById, updateListing } from "@/lib/store";
+import { getListingWithUser, createSubmission, getUserById, updateListing, addCollaboratorsToListing } from "@/lib/store";
 import { sendEmail, buildProposalEmail } from "@/lib/email";
 
 export const runtime = "nodejs";
@@ -31,10 +31,21 @@ export async function POST(req: Request, ctx: Ctx) {
   }
 
   const body = await req.json();
-  const { orderedPhotoIds, note, advisorId } = body as { orderedPhotoIds: string[]; note?: string; advisorId?: string };
+  const { orderedPhotoIds, note } = body as { orderedPhotoIds: string[]; note?: string };
+
+  // Support both single advisorId and multiple advisorIds
+  const advisorIds: string[] = Array.isArray(body.advisorIds)
+    ? body.advisorIds
+    : body.advisorId
+      ? [body.advisorId]
+      : [];
 
   if (!Array.isArray(orderedPhotoIds) || orderedPhotoIds.length === 0) {
     return NextResponse.json({ error: "orderedPhotoIds must be a non-empty array" }, { status: 400 });
+  }
+
+  if (advisorIds.length === 0) {
+    return NextResponse.json({ error: "At least one advisor is required" }, { status: 400 });
   }
 
   // Validate all photo IDs belong to this listing
@@ -50,6 +61,10 @@ export async function POST(req: Request, ctx: Ctx) {
     await updateListing(id, { status: "SUBMITTED" });
   }
 
+  // Add all selected advisors as collaborators on the listing
+  await addCollaboratorsToListing(id, advisorIds);
+
+  // Create a single submission (proposedToUserId uses the first advisor for backward compat)
   const submission = await createSubmission({
     listingId: id,
     initiatorRole: "LISTINGS",
@@ -57,34 +72,27 @@ export async function POST(req: Request, ctx: Ctx) {
     orderedPhotoIds,
     submittedByUserId: user.id,
     note,
-    proposedToUserId: advisorId,
+    proposedToUserId: advisorIds[0],
   });
 
-  // Send notification email to the selected advisor (or listing owner as fallback)
+  // Send notification emails to all selected advisors
   try {
-    let recipient = null;
-    if (advisorId) {
-      const advisor = await getUserById(advisorId);
-      if (advisor && advisor.role === "ADVISOR") {
-        recipient = advisor;
-      }
-    }
-    if (!recipient) {
-      recipient = await getUserById(listingWithUser.userId);
-    }
+    const baseUrl = process.env.NEXTAUTH_URL || "http://localhost:3000";
 
-    if (recipient?.email) {
-      const baseUrl = process.env.NEXTAUTH_URL || "http://localhost:3000";
+    for (const advisorId of advisorIds) {
+      const advisor = await getUserById(advisorId);
+      if (!advisor?.email) continue;
+
       const { subject, body: emailBody } = buildProposalEmail({
         address: listingWithUser.address,
-        advisorName: recipient.name || "",
+        advisorName: advisor.name || "",
         photoCount: orderedPhotoIds.length,
         listingId: id,
         baseUrl,
         note,
       });
 
-      await sendEmail({ to: recipient.email, subject, body: emailBody });
+      await sendEmail({ to: advisor.email, subject, body: emailBody });
     }
   } catch (err) {
     console.error("Failed to send proposal notification:", err);

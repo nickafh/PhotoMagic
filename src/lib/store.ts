@@ -676,6 +676,66 @@ export async function hasProposalForUser(listingId: string, userId: string): Pro
   return count > 0;
 }
 
+// --- Listing Collaborator functions ---
+
+export async function isListingCollaborator(listingId: string, userId: string): Promise<boolean> {
+  const listing = await prisma.listing.findFirst({
+    where: {
+      id: listingId,
+      collaborators: { some: { id: userId } },
+    },
+    select: { id: true },
+  });
+  return listing !== null;
+}
+
+export async function addCollaboratorsToListing(listingId: string, userIds: string[]): Promise<void> {
+  await prisma.listing.update({
+    where: { id: listingId },
+    data: {
+      collaborators: {
+        connect: userIds.map((id) => ({ id })),
+      },
+    },
+  });
+}
+
+export async function getListingCollaborators(listingId: string) {
+  const listing = await prisma.listing.findUnique({
+    where: { id: listingId },
+    select: {
+      collaborators: {
+        select: { id: true, email: true, name: true, role: true },
+      },
+    },
+  });
+  return listing?.collaborators ?? [];
+}
+
+export async function getCollaboratedListings(userId: string): Promise<LegacyListing[]> {
+  const listings = await prisma.listing.findMany({
+    where: {
+      collaborators: { some: { id: userId } },
+    },
+    include: {
+      photos: {
+        orderBy: { sortOrder: "asc" },
+      },
+    },
+    orderBy: { updatedAt: "desc" },
+  });
+
+  return listings.map(toLegacyListing);
+}
+
+/** Check if user has access to a listing via ownership, collaborator, or proposal */
+export async function hasListingAccess(listingId: string, userId: string): Promise<boolean> {
+  // Check collaborator first (cheaper than scanning submissions)
+  if (await isListingCollaborator(listingId, userId)) return true;
+  // Fall back to proposal check for backward compat
+  return hasProposalForUser(listingId, userId);
+}
+
 function guessExt(name: string, mime: string) {
   const lower = name.toLowerCase();
   if (lower.endsWith(".jpg") || lower.endsWith(".jpeg")) return "jpg";

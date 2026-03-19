@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { getAuthenticatedUser } from "@/lib/auth-helpers";
-import { createListing, getListingsByUserId, getListingsProposedToUser, getAllListings, countListings } from "@/lib/store";
+import { createListing, getListingsByUserId, getListingsProposedToUser, getCollaboratedListings, getAllListings, countListings } from "@/lib/store";
 import { hasPermission } from "@/lib/permissions";
 
 export const runtime = "nodejs";
@@ -36,17 +36,19 @@ export async function GET(req: Request) {
     return NextResponse.json({ listings, total });
   }
 
-  // Get user's own listings + listings proposed to them
-  const [ownListings, proposedListings] = await Promise.all([
+  // Get user's own listings + collaborator listings + listings proposed to them
+  const [ownListings, collaboratorListings, proposedListings] = await Promise.all([
     getListingsByUserId(user.id),
+    getCollaboratedListings(user.id),
     getListingsProposedToUser(user.id),
   ]);
 
   // Merge and deduplicate by listing ID
   const seen = new Set(ownListings.map((l) => l.id));
   const merged = [...ownListings];
-  for (const listing of proposedListings) {
+  for (const listing of [...collaboratorListings, ...proposedListings]) {
     if (!seen.has(listing.id)) {
+      seen.add(listing.id);
       merged.push(listing);
     }
   }

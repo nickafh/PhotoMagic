@@ -30,7 +30,7 @@ export default function ReviewSubmissionPage() {
   const [changesNote, setChangesNote] = useState("");
   const [advisorSearch, setAdvisorSearch] = useState("");
   const [advisorResults, setAdvisorResults] = useState<{ id: string; email: string; name: string | null; role: string }[]>([]);
-  const [selectedAdvisor, setSelectedAdvisor] = useState<{ id: string; email: string; name: string | null } | null>(null);
+  const [selectedAdvisors, setSelectedAdvisors] = useState<{ id: string; email: string; name: string | null }[]>([]);
   const [showAdvisorDropdown, setShowAdvisorDropdown] = useState(false);
   const [advisorSearchLoading, setAdvisorSearchLoading] = useState(false);
   const advisorSearchTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -248,7 +248,7 @@ export default function ReviewSubmissionPage() {
   }
 
   async function handlePropose() {
-    if (!listing || !selectedAdvisor) return;
+    if (!listing || selectedAdvisors.length === 0) return;
     setIsProposing(true);
     try {
       // Send the current photo order (non-excluded first, then excluded) as the proposal
@@ -263,7 +263,7 @@ export default function ReviewSubmissionPage() {
         body: JSON.stringify({
           orderedPhotoIds,
           note: proposalNote || undefined,
-          advisorId: selectedAdvisor.id,
+          advisorIds: selectedAdvisors.map((a) => a.id),
         }),
       });
 
@@ -275,9 +275,13 @@ export default function ReviewSubmissionPage() {
       await fetchListing();
       setShowProposeModal(false);
       setProposalNote("");
-      setSelectedAdvisor(null);
+      setSelectedAdvisors([]);
       setAdvisorSearch("");
-      toast.success("Proposal sent to the advisor.");
+      toast.success(
+        selectedAdvisors.length === 1
+          ? "Proposal sent to the advisor."
+          : `Proposal sent to ${selectedAdvisors.length} advisors.`
+      );
     } catch (error) {
       console.error("Propose error:", error);
       toast.error("Failed to send proposal");
@@ -431,7 +435,7 @@ export default function ReviewSubmissionPage() {
               {submission?.initiatorRole !== "ADVISOR" && (
                 <button
                   onClick={async () => {
-                    setSelectedAdvisor(null);
+                    setSelectedAdvisors([]);
                     setAdvisorSearch("");
                     setAdvisorResults([]);
                     if (listing?.userId) {
@@ -440,7 +444,7 @@ export default function ReviewSubmissionPage() {
                         if (res.ok) {
                           const owner = await res.json();
                           if (owner.role === "ADVISOR") {
-                            setSelectedAdvisor({ id: owner.id, email: owner.email, name: owner.name });
+                            setSelectedAdvisors([{ id: owner.id, email: owner.email, name: owner.name }]);
                           }
                         }
                       } catch {}
@@ -510,7 +514,7 @@ export default function ReviewSubmissionPage() {
               {submission?.initiatorRole !== "ADVISOR" && (
                 <button
                   onClick={async () => {
-                    setSelectedAdvisor(null);
+                    setSelectedAdvisors([]);
                     setAdvisorSearch("");
                     setAdvisorResults([]);
                     if (listing?.userId) {
@@ -519,7 +523,7 @@ export default function ReviewSubmissionPage() {
                         if (res.ok) {
                           const owner = await res.json();
                           if (owner.role === "ADVISOR") {
-                            setSelectedAdvisor({ id: owner.id, email: owner.email, name: owner.name });
+                            setSelectedAdvisors([{ id: owner.id, email: owner.email, name: owner.name }]);
                           }
                         }
                       } catch {}
@@ -656,62 +660,63 @@ export default function ReviewSubmissionPage() {
                 This will send the current photo order as a proposal to the advisor for approval.
               </p>
               <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
-                Select Advisor
+                Select Advisor{selectedAdvisors.length > 1 ? "s" : ""}
               </label>
-              {selectedAdvisor ? (
-                <div className="flex items-center gap-2 mb-3 px-3 py-2 bg-primary/5 border border-primary/20 rounded-lg">
-                  <div className="flex-1 min-w-0">
-                    <span className="font-medium text-slate-900 dark:text-white">
-                      {selectedAdvisor.name || selectedAdvisor.email}
-                    </span>
-                    {selectedAdvisor.name && (
-                      <span className="text-sm text-slate-500 dark:text-slate-400 ml-2">
-                        {selectedAdvisor.email}
+              {selectedAdvisors.length > 0 && (
+                <div className="flex flex-wrap gap-2 mb-2">
+                  {selectedAdvisors.map((advisor) => (
+                    <div
+                      key={advisor.id}
+                      className="flex items-center gap-1.5 px-2.5 py-1.5 bg-primary/5 border border-primary/20 rounded-lg text-sm"
+                    >
+                      <span className="font-medium text-slate-900 dark:text-white truncate max-w-[180px]">
+                        {advisor.name || advisor.email}
                       </span>
-                    )}
-                    {selectedAdvisor.id === listing?.userId && (
-                      <span className="ml-2 text-xs text-gold">(listing owner)</span>
-                    )}
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setSelectedAdvisor(null);
-                      setAdvisorSearch("");
-                    }}
-                    className="p-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 rounded"
-                  >
-                    <span className="material-symbols-outlined text-lg">close</span>
-                  </button>
+                      {advisor.id === listing?.userId && (
+                        <span className="text-xs text-gold whitespace-nowrap">(owner)</span>
+                      )}
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setSelectedAdvisors((prev) => prev.filter((a) => a.id !== advisor.id))
+                        }
+                        className="p-0.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 rounded"
+                      >
+                        <span className="material-symbols-outlined text-[16px]">close</span>
+                      </button>
+                    </div>
+                  ))}
                 </div>
-              ) : (
-                <div className="relative mb-3" ref={advisorDropdownRef}>
-                  <div className="relative">
-                    <input
-                      type="text"
-                      value={advisorSearch}
-                      onChange={(e) => setAdvisorSearch(e.target.value)}
-                      onFocus={() => {
-                        if (advisorResults.length > 0) setShowAdvisorDropdown(true);
-                      }}
-                      placeholder="Search by name or email..."
-                      inputMode="search"
-                      className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-white placeholder-slate-400 focus:ring-2 focus:ring-primary focus:border-transparent"
-                    />
-                    {advisorSearchLoading && (
-                      <div className="absolute right-3 top-1/2 -translate-y-1/2">
-                        <div className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin" />
-                      </div>
-                    )}
-                  </div>
-                  {showAdvisorDropdown && advisorResults.length > 0 && (
-                    <div className="absolute z-10 mt-1 w-full bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg shadow-lg max-h-48 overflow-y-auto">
-                      {advisorResults.map((a) => (
+              )}
+              <div className="relative mb-3" ref={advisorDropdownRef}>
+                <div className="relative">
+                  <input
+                    type="text"
+                    value={advisorSearch}
+                    onChange={(e) => setAdvisorSearch(e.target.value)}
+                    onFocus={() => {
+                      if (advisorResults.length > 0) setShowAdvisorDropdown(true);
+                    }}
+                    placeholder="Search by name or email..."
+                    inputMode="search"
+                    className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-white placeholder-slate-400 focus:ring-2 focus:ring-primary focus:border-transparent"
+                  />
+                  {advisorSearchLoading && (
+                    <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                      <div className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+                    </div>
+                  )}
+                </div>
+                {showAdvisorDropdown && advisorResults.length > 0 && (
+                  <div className="absolute z-10 mt-1 w-full bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg shadow-lg max-h-48 overflow-y-auto">
+                    {advisorResults
+                      .filter((a) => !selectedAdvisors.some((s) => s.id === a.id))
+                      .map((a) => (
                         <button
                           key={a.id}
                           type="button"
                           onClick={() => {
-                            setSelectedAdvisor({ id: a.id, email: a.email, name: a.name });
+                            setSelectedAdvisors((prev) => [...prev, { id: a.id, email: a.email, name: a.name }]);
                             setAdvisorSearch("");
                             setAdvisorResults([]);
                             setShowAdvisorDropdown(false);
@@ -729,10 +734,9 @@ export default function ReviewSubmissionPage() {
                           )}
                         </button>
                       ))}
-                    </div>
-                  )}
-                </div>
-              )}
+                  </div>
+                )}
+              </div>
               <textarea
                 value={proposalNote}
                 onChange={(e) => setProposalNote(e.target.value)}
@@ -751,7 +755,7 @@ export default function ReviewSubmissionPage() {
               </button>
               <button
                 onClick={handlePropose}
-                disabled={isProposing || !selectedAdvisor}
+                disabled={isProposing || selectedAdvisors.length === 0}
                 className="flex-1 px-4 py-2.5 bg-primary hover:bg-primary/90 text-white font-semibold rounded-lg transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
               >
                 {isProposing ? (

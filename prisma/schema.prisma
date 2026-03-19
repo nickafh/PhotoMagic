@@ -36,6 +36,7 @@ model User {
   oktaId               String?                @unique
   role                 Role                   @default(ADVISOR)
   listings               Listing[]
+  collaboratedListings   Listing[]              @relation("ListingCollaborators")
   submittedSubmissions   PhotoOrderSubmission[]  @relation("submittedSubmissions")
   approvedSubmissions    PhotoOrderSubmission[]  @relation("approvedSubmissions")
   proposedToSubmissions  PhotoOrderSubmission[]  @relation("proposedToSubmissions")
@@ -51,6 +52,7 @@ model Listing {
   status           ListingStatus          @default(DRAFT)
   userId           String
   user             User                   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  collaborators    User[]                 @relation("ListingCollaborators")
   photos           Photo[]
   submissions      PhotoOrderSubmission[]
   createdAt        DateTime               @default(now())

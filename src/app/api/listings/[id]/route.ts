@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { getAuthenticatedUser } from "@/lib/auth-helpers";
-import { toLegacyListing, getListingWithUser, updateListing, deleteListing, hasProposalForUser } from "@/lib/store";
+import { toLegacyListing, getListingWithUser, updateListing, deleteListing, hasListingAccess } from "@/lib/store";
 import { canAccessListing, canModifyListing, canDeleteListing, canReorderListing, canApproveListing } from "@/lib/permissions";
 import { sendEmail, buildApprovalEmail } from "@/lib/email";
 
@@ -32,9 +32,9 @@ export async function GET(_req: Request, ctx: Ctx) {
   const mockSession = { user: { id: user.id, role: user.role, email: user.email } };
 
   if (!canAccessListing(mockSession as any, listingWithUser.userId)) {
-    // Fallback: allow access if the user was proposed to on this listing
-    const proposedTo = await hasProposalForUser(id, user.id);
-    if (!proposedTo) {
+    // Fallback: allow access if the user is a collaborator or was proposed to
+    const hasAccess = await hasListingAccess(id, user.id);
+    if (!hasAccess) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
   }
@@ -73,9 +73,9 @@ export async function PATCH(req: Request, ctx: Ctx) {
     );
 
     if (!canReorder) {
-      // Allow advisors who have an active proposal for this listing
-      const proposedTo = await hasProposalForUser(id, user.id);
-      if (!proposedTo) {
+      // Allow collaborators/proposed advisors to reorder
+      const hasAccess = await hasListingAccess(id, user.id);
+      if (!hasAccess) {
         return NextResponse.json(
           { error: "Cannot reorder photos for this listing" },
           { status: 403 }

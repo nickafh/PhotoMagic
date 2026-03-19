@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { getAuthenticatedUser } from "@/lib/auth-helpers";
-import { addPhotoToListing, getListingWithUser, hasProposalForUser } from "@/lib/store";
+import { addPhotoToListing, getListingWithUser, hasListingAccess } from "@/lib/store";
 import { canModifyListing } from "@/lib/permissions";
 
 export const runtime = "nodejs";
@@ -33,11 +33,10 @@ export async function POST(req: Request, ctx: Ctx) {
   if (!canModifyListing(mockSession as any, listingWithUser.userId)) {
     // Allow LISTINGS team to upload to any listing
     const isListingsTeam = user.role === "LISTINGS" || user.role === "ADMIN";
-    // Allow advisors to upload to listings proposed to them
-    const isProposedAdvisor =
-      user.role === "ADVISOR" && (await hasProposalForUser(id, user.id));
+    // Allow collaborators/proposed advisors to upload
+    const hasAccess = !isListingsTeam && (await hasListingAccess(id, user.id));
 
-    if (!isListingsTeam && !isProposedAdvisor) {
+    if (!isListingsTeam && !hasAccess) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
   }
