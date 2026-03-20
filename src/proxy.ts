@@ -25,10 +25,15 @@ export async function proxy(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
 
   // Resolve tenant from hostname and set header for downstream use
-  const host = request.headers.get("host") || "";
+  const host = request.headers.get("x-forwarded-host") || request.headers.get("host") || "";
   const tenant = getTenantByHostname(host);
   const requestHeaders = new Headers(request.headers);
   requestHeaders.set("x-tenant-id", tenant.id);
+  // Ensure x-forwarded-host is set for Auth.js host detection
+  requestHeaders.set("x-forwarded-host", host);
+  if (!requestHeaders.get("x-forwarded-proto")) {
+    requestHeaders.set("x-forwarded-proto", "https");
+  }
 
   if (isPublicPath(pathname)) {
     // Authenticated users hitting / can be redirected to dashboard

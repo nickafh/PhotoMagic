@@ -41,11 +41,15 @@ function getOktaConfig(tenantId: string) {
 }
 
 export const { handlers, signIn, signOut, auth } = NextAuth((req) => {
-  const host = (req as NextRequest | undefined)?.headers?.get?.("host") || "";
+  const host =
+    (req as NextRequest | undefined)?.headers?.get?.("x-forwarded-host") ||
+    (req as NextRequest | undefined)?.headers?.get?.("host") ||
+    "";
   const tenant = getTenantByHostname(host);
   const oktaConfig = getOktaConfig(tenant.id);
 
   return {
+    trustHost: true,
     providers: [
       Okta({
         clientId: oktaConfig.clientId,
