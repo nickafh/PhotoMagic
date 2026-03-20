@@ -11,6 +11,7 @@ export type TenantConfig = {
   fromEmail: string;
   listingsTeamEmail: string;
   baseUrl: string;
+  oktaProviderId: string;
 };
 
 const TENANTS: Record<string, TenantConfig> = {
@@ -25,6 +26,7 @@ const TENANTS: Record<string, TenantConfig> = {
     fromEmail: process.env.LISTINGS_TEAM_EMAIL || "",
     listingsTeamEmail: process.env.LISTINGS_TEAM_EMAIL || "",
     baseUrl: process.env.NEXTAUTH_URL || "https://photomagic.atlantafinehomes.com",
+    oktaProviderId: "okta-afh",
   },
   msir: {
     id: "msir",
@@ -37,6 +39,7 @@ const TENANTS: Record<string, TenantConfig> = {
     fromEmail: process.env.MSIR_LISTINGS_TEAM_EMAIL || "",
     listingsTeamEmail: process.env.MSIR_LISTINGS_TEAM_EMAIL || "",
     baseUrl: process.env.MSIR_BASE_URL || "https://photomagic.mountainsir.com",
+    oktaProviderId: "okta-msir",
   },
 };
 
