@@ -16,9 +16,9 @@ export async function POST() {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
-  if (!process.env.OKTA_API_TOKEN) {
+  if (!process.env.OKTA_API_TOKEN && !process.env.MSIR_OKTA_API_TOKEN) {
     return NextResponse.json(
-      { error: "OKTA_API_TOKEN is not configured" },
+      { error: "No Okta API tokens configured" },
       { status: 500 }
     );
   }

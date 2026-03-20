@@ -16,21 +16,11 @@ function getNextUrl(linkHeader: string | null): string | null {
   return match ? match[1] : null;
 }
 
-export async function syncUsersFromOkta(): Promise<{
+async function syncOktaOrg(apiToken: string, issuer: string): Promise<{
   created: number;
   updated: number;
   total: number;
 }> {
-  const apiToken = process.env.OKTA_API_TOKEN;
-  if (!apiToken) {
-    throw new Error("OKTA_API_TOKEN is not configured");
-  }
-
-  const issuer = process.env.OKTA_ISSUER;
-  if (!issuer) {
-    throw new Error("OKTA_ISSUER is not configured");
-  }
-
   // Strip /oauth2/default or similar suffix to get the org URL
   const orgUrl = issuer.replace(/\/oauth2\/.*$/, "");
 
@@ -50,7 +40,7 @@ export async function syncUsersFromOkta(): Promise<{
 
     if (!res.ok) {
       const body = await res.text();
-      throw new Error(`Okta API error ${res.status}: ${body}`);
+      throw new Error(`Okta API error ${res.status} from ${orgUrl}: ${body}`);
     }
 
     const users: OktaUser[] = await res.json();
@@ -91,6 +81,38 @@ export async function syncUsersFromOkta(): Promise<{
 
     // Follow pagination via Link header
     nextUrl = getNextUrl(res.headers.get("link"));
+  }
+
+  return { created, updated, total };
+}
+
+export async function syncUsersFromOkta(): Promise<{
+  created: number;
+  updated: number;
+  total: number;
+}> {
+  let created = 0;
+  let updated = 0;
+  let total = 0;
+
+  // Sync AFH Okta
+  if (process.env.OKTA_API_TOKEN && process.env.OKTA_ISSUER) {
+    const afh = await syncOktaOrg(process.env.OKTA_API_TOKEN, process.env.OKTA_ISSUER);
+    created += afh.created;
+    updated += afh.updated;
+    total += afh.total;
+  }
+
+  // Sync MSIR Okta
+  if (process.env.MSIR_OKTA_API_TOKEN && process.env.MSIR_OKTA_ISSUER) {
+    const msir = await syncOktaOrg(process.env.MSIR_OKTA_API_TOKEN, process.env.MSIR_OKTA_ISSUER);
+    created += msir.created;
+    updated += msir.updated;
+    total += msir.total;
+  }
+
+  if (total === 0) {
+    throw new Error("No Okta API tokens configured");
   }
 
   return { created, updated, total };
