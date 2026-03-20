@@ -2,6 +2,8 @@ import "./globals.css";
 import type { Metadata } from "next";
 import { Source_Sans_3, Amiri } from "next/font/google";
 import { Providers } from "@/components/Providers";
+import { TenantProvider } from "@/components/TenantProvider";
+import { getTenant } from "@/lib/tenant";
 
 const sourceSans = Source_Sans_3({
   subsets: ["latin"],
@@ -16,39 +18,45 @@ const amiri = Amiri({
   variable: "--font-display",
 });
 
-export const metadata: Metadata = {
-  title: "PhotoMagic",
-  description: "Upload, arrange, and download listing photo sequences.",
-  icons: {
-    icon: [
-      { url: "/favicon.ico", sizes: "any" },
-      { url: "/favicon-32x32.png", sizes: "32x32", type: "image/png" },
-      { url: "/favicon-16x16.png", sizes: "16x16", type: "image/png" },
-    ],
-    apple: "/apple-touch-icon.png",
-  },
-  openGraph: {
-    title: "PhotoMagic",
-    description: "Listing photo management for Atlanta Fine Homes",
-    url: "https://photomagic.atlantafinehomes.com",
-    siteName: "PhotoMagic",
-    images: [
-      {
-        url: "https://photomagic.atlantafinehomes.com/og-image.png",
-        width: 1200,
-        height: 630,
-        alt: "PhotoMagic - Atlanta Fine Homes Sotheby's International Realty",
-      },
-    ],
-    type: "website",
-  },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const tenant = await getTenant();
 
-export default function RootLayout({
+  return {
+    title: tenant.appName,
+    description: "Upload, arrange, and download listing photo sequences.",
+    icons: {
+      icon: [
+        { url: `${tenant.favicon}.ico`, sizes: "any" },
+        { url: `${tenant.favicon}-32x32.png`, sizes: "32x32", type: "image/png" },
+        { url: `${tenant.favicon}-16x16.png`, sizes: "16x16", type: "image/png" },
+      ],
+      apple: `${tenant.favicon.replace("/favicon", "/apple-touch-icon")}.png`,
+    },
+    openGraph: {
+      title: tenant.appName,
+      description: `Listing photo management for ${tenant.name}`,
+      url: tenant.baseUrl,
+      siteName: tenant.appName,
+      images: [
+        {
+          url: `${tenant.baseUrl}${tenant.ogImage}`,
+          width: 1200,
+          height: 630,
+          alt: `${tenant.appName} - ${tenant.name}`,
+        },
+      ],
+      type: "website",
+    },
+  };
+}
+
+export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const tenant = await getTenant();
+
   return (
     <html lang="en" className="light">
       <head>
@@ -67,7 +75,9 @@ export default function RootLayout({
           "min-h-screen",
         ].join(" ")}
       >
-        <Providers>{children}</Providers>
+        <Providers>
+          <TenantProvider tenant={tenant}>{children}</TenantProvider>
+        </Providers>
       </body>
     </html>
   );

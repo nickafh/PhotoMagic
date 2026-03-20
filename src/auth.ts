@@ -26,9 +26,18 @@ interface ExtendedJWT extends JWT {
 export const { handlers, signIn, signOut, auth } = NextAuth({
   providers: [
     Okta({
+      id: "okta-afh",
+      name: "Okta (AFH)",
       clientId: process.env.OKTA_CLIENT_ID!,
       clientSecret: process.env.OKTA_CLIENT_SECRET!,
       issuer: process.env.OKTA_ISSUER!,
+    }),
+    Okta({
+      id: "okta-msir",
+      name: "Okta (MSIR)",
+      clientId: process.env.MSIR_OKTA_CLIENT_ID!,
+      clientSecret: process.env.MSIR_OKTA_CLIENT_SECRET!,
+      issuer: process.env.MSIR_OKTA_ISSUER!,
     }),
   ],
   callbacks: {

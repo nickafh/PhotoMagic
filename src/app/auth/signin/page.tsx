@@ -4,11 +4,13 @@ import Image from "next/image";
 import { signIn } from "next-auth/react";
 import { useSearchParams } from "next/navigation";
 import { Suspense } from "react";
+import { useTenant } from "@/components/TenantProvider";
 
 function SignInForm() {
   const searchParams = useSearchParams();
   const callbackUrl = searchParams.get("callbackUrl") || "/dashboard";
   const error = searchParams.get("error");
+  const tenant = useTenant();
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-slate-50 to-slate-100 dark:from-background-dark dark:to-slate-900 py-12 px-4 sm:px-6 lg:px-8">
@@ -19,8 +21,8 @@ function SignInForm() {
               <div className="flex justify-center mb-6">
                 <div className="rounded-xl bg-primary px-6 py-4 ring-1 ring-black/5 dark:ring-white/10 shadow-sm">
                   <Image
-                    src="/brand/Atlanta Fine Homes_Horz_White.png"
-                    alt="Atlanta Fine Homes"
+                    src={tenant.logo}
+                    alt={tenant.logoAlt}
                     width={200}
                     height={48}
                     style={{ height: "48px", width: "auto" }}
@@ -29,7 +31,7 @@ function SignInForm() {
                 </div>
               </div>
               <h1 className="text-2xl sm:text-3xl font-display font-bold text-gray-900 dark:text-white tracking-tight">
-                PhotoMagic
+                {tenant.appName}
               </h1>
               <p className="mt-2 text-sm sm:text-base text-gray-600 dark:text-gray-400">
                 Sign in to manage your photo listings
@@ -51,7 +53,7 @@ function SignInForm() {
             <div className="space-y-4">
               <button
                 type="button"
-                onClick={() => signIn("okta", { callbackUrl })}
+                onClick={() => signIn(tenant.oktaProviderId, { callbackUrl })}
                 className="w-full flex items-center justify-center gap-3 px-4 py-3.5 rounded-xl border border-slate-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-slate-800 dark:text-gray-200 font-medium shadow-sm hover:bg-slate-50 dark:hover:bg-gray-600 hover:border-slate-300 dark:hover:border-gray-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:focus-visible:ring-offset-gray-800 active:bg-slate-100 dark:active:bg-gray-500 transition-colors duration-200"
               >
                 <svg className="w-5 h-5 shrink-0" viewBox="0 0 24 24" fill="currentColor" aria-hidden>

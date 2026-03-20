@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { useSession, signOut } from "next-auth/react";
 import { useUser } from "@/components/UserProvider";
+import { useTenant } from "@/components/TenantProvider";
 import StatusBadge from "./StatusBadge";
 
 type MobileHeaderProps = {
@@ -15,6 +16,7 @@ type MobileHeaderProps = {
 export default function MobileHeader({ title, status }: MobileHeaderProps) {
   const { data: session } = useSession();
   const { user } = useUser();
+  const tenant = useTenant();
   const [showMenu, setShowMenu] = useState(false);
   const isAdmin = user?.role === "LISTINGS" || user?.role === "ADMIN";
 
@@ -37,7 +39,7 @@ export default function MobileHeader({ title, status }: MobileHeaderProps) {
               className="text-lg text-white tracking-wide truncate max-w-[200px]"
               style={{ fontFamily: "'Benton Sans', sans-serif" }}
             >
-              {title || "PhotoMagic"}
+              {title || tenant.appName}
             </h1>
           </div>
           <div className="flex items-center gap-2">
@@ -64,7 +66,7 @@ export default function MobileHeader({ title, status }: MobileHeaderProps) {
                   <div className="w-8 h-8 rounded-lg bg-gold/20 flex items-center justify-center">
                     <span className="material-symbols-outlined text-gold text-lg">home_work</span>
                   </div>
-                  <span className="text-white text-xl tracking-wide" style={{ fontFamily: "'Benton Sans', sans-serif" }}>PhotoMagic</span>
+                  <span className="text-white text-xl tracking-wide" style={{ fontFamily: "'Benton Sans', sans-serif" }}>{tenant.appName}</span>
                 </div>
                 <button
                   onClick={() => setShowMenu(false)}

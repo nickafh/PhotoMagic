@@ -3,6 +3,7 @@ import { getAuthenticatedUser } from "@/lib/auth-helpers";
 import { getSubmissionById, requestChangesOnSubmission, getLatestSubmissionForListing, getListingWithUser, getUserById, updateListing } from "@/lib/store";
 import { isListingsTeamOrAdmin } from "@/lib/permissions";
 import { sendEmail, buildChangesRequestedEmail } from "@/lib/email";
+import { getTenant } from "@/lib/tenant";
 
 export const runtime = "nodejs";
 
@@ -53,17 +54,17 @@ export async function POST(req: Request, ctx: Ctx) {
 
     // Send notification to the advisor
     try {
+      const tenant = await getTenant();
       const owner = await getUserById(listingWithUser.userId);
       if (owner?.email) {
-        const baseUrl = process.env.NEXTAUTH_URL || "http://localhost:3000";
         const { subject, body: emailBody } = buildChangesRequestedEmail({
           address: listingWithUser.address,
           reviewerName: user.name || "Listings Team",
           note,
           listingId: id,
-          baseUrl,
+          baseUrl: tenant.baseUrl,
         });
-        await sendEmail({ to: owner.email, subject, body: emailBody });
+        await sendEmail({ to: owner.email, subject, body: emailBody, from: tenant.fromEmail });
       }
     } catch (err) {
       console.error("Failed to send changes requested notification:", err);
@@ -91,7 +92,7 @@ export async function POST(req: Request, ctx: Ctx) {
   // Send notification to the initiator
   try {
     if (listingWithUser) {
-      const baseUrl = process.env.NEXTAUTH_URL || "http://localhost:3000";
+      const tenant = await getTenant();
 
       if (submission.initiatorRole === "ADVISOR") {
         // Advisor submitted → email advisor
@@ -102,22 +103,21 @@ export async function POST(req: Request, ctx: Ctx) {
             reviewerName: user.name || "Listings Team",
             note,
             listingId: id,
-            baseUrl,
+            baseUrl: tenant.baseUrl,
           });
-          await sendEmail({ to: owner.email, subject, body: emailBody });
+          await sendEmail({ to: owner.email, subject, body: emailBody, from: tenant.fromEmail });
         }
       } else {
         // Listings submitted → email listings team
-        const listingsTeamEmail = process.env.LISTINGS_TEAM_EMAIL;
-        if (listingsTeamEmail) {
+        if (tenant.listingsTeamEmail) {
           const { subject, body: emailBody } = buildChangesRequestedEmail({
             address: listingWithUser.address,
             reviewerName: user.name || "Advisor",
             note,
             listingId: id,
-            baseUrl,
+            baseUrl: tenant.baseUrl,
           });
-          await sendEmail({ to: listingsTeamEmail, subject, body: emailBody });
+          await sendEmail({ to: tenant.listingsTeamEmail, subject, body: emailBody, from: tenant.fromEmail });
         }
       }
     }

@@ -1,6 +1,7 @@
 import { auth } from "@/auth";
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
+import { getTenantByHostname } from "@/lib/tenant";
 
 // Public routes that don't require authentication (Context7-style)
 const publicRoutes = ["/", "/auth/signin", "/api/auth", "/api/cron"];
@@ -23,6 +24,12 @@ function isProtectedRoute(pathname: string): boolean {
 export async function proxy(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
 
+  // Resolve tenant from hostname and set header for downstream use
+  const host = request.headers.get("host") || "";
+  const tenant = getTenantByHostname(host);
+  const requestHeaders = new Headers(request.headers);
+  requestHeaders.set("x-tenant-id", tenant.id);
+
   if (isPublicPath(pathname)) {
     // Authenticated users hitting / can be redirected to dashboard
     if (pathname === "/") {
@@ -31,7 +38,7 @@ export async function proxy(request: NextRequest) {
         return NextResponse.redirect(new URL("/dashboard", request.url));
       }
     }
-    return NextResponse.next();
+    return NextResponse.next({ request: { headers: requestHeaders } });
   }
 
   const session = await auth();
@@ -42,12 +49,12 @@ export async function proxy(request: NextRequest) {
     return NextResponse.redirect(signInUrl);
   }
 
-  return NextResponse.next();
+  return NextResponse.next({ request: { headers: requestHeaders } });
 }
 
 export const config = {
   matcher: [
     // Match all paths except static files and images
-    "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
+    "/((?!_next/static|_next/image|brand/|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
   ],
 };

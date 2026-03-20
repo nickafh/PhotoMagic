@@ -3,6 +3,7 @@ import { getAuthenticatedUser } from "@/lib/auth-helpers";
 import { getListingWithUser, updateListing, createSubmission, getListingsTeamMembers } from "@/lib/store";
 import { canModifyListing } from "@/lib/permissions";
 import { sendEmail, buildSubmissionEmail } from "@/lib/email";
+import { getTenant } from "@/lib/tenant";
 
 export const runtime = "nodejs";
 
@@ -75,15 +76,15 @@ export async function POST(_req: Request, ctx: Ctx) {
 
   // Send notification email to all LISTINGS and ADMIN users
   try {
+    const tenant = await getTenant();
     const teamMembers = await getListingsTeamMembers();
-    const baseUrl = process.env.NEXTAUTH_URL || "http://localhost:3000";
     const { subject, body } = buildSubmissionEmail({
       listingAddress: listingWithUser.address,
       listingId: listingWithUser.id,
       submitterName: user.name || "Unknown",
       submitterEmail: user.email,
       photoCount: activePhotoCount,
-      baseUrl,
+      baseUrl: tenant.baseUrl,
     });
 
     for (const member of teamMembers) {
@@ -92,6 +93,7 @@ export async function POST(_req: Request, ctx: Ctx) {
           to: member.email,
           subject,
           body,
+          from: tenant.fromEmail,
         });
       }
     }

@@ -3,6 +3,7 @@ import { getAuthenticatedUser } from "@/lib/auth-helpers";
 import { toLegacyListing, getListingWithUser, updateListing, deleteListing, hasListingAccess } from "@/lib/store";
 import { canAccessListing, canModifyListing, canDeleteListing, canReorderListing, canApproveListing } from "@/lib/permissions";
 import { sendEmail, buildApprovalEmail } from "@/lib/email";
+import { getTenant } from "@/lib/tenant";
 
 export const runtime = "nodejs";
 
@@ -103,7 +104,7 @@ export async function PATCH(req: Request, ctx: Ctx) {
   // Send approval notification to the listing owner
   if (isApproving && listingWithUser.user) {
     try {
-      const baseUrl = process.env.NEXTAUTH_URL || "http://localhost:3000";
+      const tenant = await getTenant();
       const activePhotoCount = listingWithUser.photos.filter((p) => !p.excluded).length;
 
       const { subject, body: emailBody } = buildApprovalEmail({
@@ -111,13 +112,14 @@ export async function PATCH(req: Request, ctx: Ctx) {
         listingId: listingWithUser.id,
         approverName: user.name || "Listings Team",
         photoCount: activePhotoCount,
-        baseUrl,
+        baseUrl: tenant.baseUrl,
       });
 
       await sendEmail({
         to: listingWithUser.user.email,
         subject,
         body: emailBody,
+        from: tenant.fromEmail,
       });
     } catch (error) {
       // Log error but don't fail the approval

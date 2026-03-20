@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { getAuthenticatedUser } from "@/lib/auth-helpers";
 import { getListingWithUser, createSubmission, getUserById, updateListing, addCollaboratorsToListing } from "@/lib/store";
 import { sendEmail, buildProposalEmail } from "@/lib/email";
+import { getTenant } from "@/lib/tenant";
 
 export const runtime = "nodejs";
 
@@ -77,7 +78,7 @@ export async function POST(req: Request, ctx: Ctx) {
 
   // Send notification emails to all selected advisors
   try {
-    const baseUrl = process.env.NEXTAUTH_URL || "http://localhost:3000";
+    const tenant = await getTenant();
 
     for (const advisorId of advisorIds) {
       const advisor = await getUserById(advisorId);
@@ -88,11 +89,11 @@ export async function POST(req: Request, ctx: Ctx) {
         advisorName: advisor.name || "",
         photoCount: orderedPhotoIds.length,
         listingId: id,
-        baseUrl,
+        baseUrl: tenant.baseUrl,
         note,
       });
 
-      await sendEmail({ to: advisor.email, subject, body: emailBody });
+      await sendEmail({ to: advisor.email, subject, body: emailBody, from: tenant.fromEmail });
     }
   } catch (err) {
     console.error("Failed to send proposal notification:", err);

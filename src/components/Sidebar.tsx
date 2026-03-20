@@ -5,6 +5,7 @@ import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { UserMenu } from "./SignInButton";
 import { useUser } from "./UserProvider";
+import { useTenant } from "./TenantProvider";
 import type { LegacyListing } from "@/lib/types";
 
 interface SidebarProps {
@@ -14,6 +15,7 @@ interface SidebarProps {
 export default function Sidebar({ listings = [] }: SidebarProps) {
   const pathname = usePathname();
   const { user } = useUser();
+  const tenant = useTenant();
 
   const isAdmin = user?.role === "LISTINGS" || user?.role === "ADMIN";
   const canManageUsers = user?.role === "ADMIN";
@@ -27,8 +29,8 @@ export default function Sidebar({ listings = [] }: SidebarProps) {
       <div className="relative p-6 pb-0">
         <Link href="/dashboard" className="flex items-center gap-3 mb-6 group">
           <Image
-            src="/brand/Atlanta Fine Homes_Horz_White.png"
-            alt="Atlanta Fine Homes"
+            src={tenant.logo}
+            alt={tenant.logoAlt}
             width={180}
             height={32}
             className="transition-opacity group-hover:opacity-90"

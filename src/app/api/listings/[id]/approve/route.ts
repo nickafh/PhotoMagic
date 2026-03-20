@@ -3,6 +3,7 @@ import { getAuthenticatedUser } from "@/lib/auth-helpers";
 import { getSubmissionById, approveSubmission, getListingWithUser, getUserById } from "@/lib/store";
 import { sendEmail, buildApprovalEmail } from "@/lib/email";
 import { getListingsTeamMembers } from "@/lib/store";
+import { getTenant } from "@/lib/tenant";
 
 export const runtime = "nodejs";
 
@@ -56,9 +57,9 @@ export async function POST(req: Request, ctx: Ctx) {
 
   // Send notification to the initiator
   try {
+    const tenant = await getTenant();
     const listingWithUser = await getListingWithUser(id);
     if (listingWithUser) {
-      const baseUrl = process.env.NEXTAUTH_URL || "http://localhost:3000";
       const activePhotoCount = listingWithUser.photos.filter((p) => !p.excluded).length;
 
       if (submission.initiatorRole === "ADVISOR") {
@@ -70,10 +71,9 @@ export async function POST(req: Request, ctx: Ctx) {
             listingId: id,
             approverName: user.name || "Listings Team",
             photoCount: activePhotoCount,
-            baseUrl,
-
+            baseUrl: tenant.baseUrl,
           });
-          await sendEmail({ to: owner.email, subject, body: emailBody });
+          await sendEmail({ to: owner.email, subject, body: emailBody, from: tenant.fromEmail });
         }
       } else {
         // Listings/Admin submitted, advisor approved → email the proposer and listings team
@@ -82,17 +82,16 @@ export async function POST(req: Request, ctx: Ctx) {
           listingId: id,
           approverName: user.name || "Advisor",
           photoCount: activePhotoCount,
-          baseUrl,
+          baseUrl: tenant.baseUrl,
         });
 
         const proposer = await getUserById(submission.submittedByUserId);
         if (proposer?.email) {
-          await sendEmail({ to: proposer.email, subject, body: emailBody });
+          await sendEmail({ to: proposer.email, subject, body: emailBody, from: tenant.fromEmail });
         }
 
-        const listingsTeamEmail = process.env.LISTINGS_TEAM_EMAIL;
-        if (listingsTeamEmail && listingsTeamEmail !== proposer?.email) {
-          await sendEmail({ to: listingsTeamEmail, subject, body: emailBody });
+        if (tenant.listingsTeamEmail && tenant.listingsTeamEmail !== proposer?.email) {
+          await sendEmail({ to: tenant.listingsTeamEmail, subject, body: emailBody, from: tenant.fromEmail });
         }
       }
     }
