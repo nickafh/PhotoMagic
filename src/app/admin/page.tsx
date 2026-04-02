@@ -69,13 +69,25 @@ export default function AdminDashboardPage() {
   return (
     <ListingShell title="Admin Dashboard">
       <div className="p-3 md:p-8">
-        <div className="mb-6 md:mb-8">
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-            Admin Dashboard
-          </h1>
-          <p className="text-gray-500 dark:text-gray-400 mt-1">
-            Welcome back, {user?.name || "Admin"}
-          </p>
+        <div className="mb-6 md:mb-8 flex items-start justify-between">
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+              Admin Dashboard
+            </h1>
+            <p className="text-gray-500 dark:text-gray-400 mt-1">
+              Welcome back, {user?.name || "Admin"}
+            </p>
+          </div>
+          {user?.role === "ADMIN" && (
+            <a
+              href="/api/admin/usage-report"
+              className="inline-flex items-center gap-2 px-3 py-2 md:px-4 bg-primary hover:bg-primary/90 text-white text-sm font-medium rounded-lg transition-colors shrink-0"
+            >
+              <span className="material-symbols-outlined text-lg">download</span>
+              <span className="hidden sm:inline">Export Usage Report</span>
+              <span className="sm:hidden">Export</span>
+            </a>
+          )}
         </div>
 
         {/* Stats Cards */}
