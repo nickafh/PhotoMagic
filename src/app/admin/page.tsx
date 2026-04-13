@@ -79,14 +79,15 @@ export default function AdminDashboardPage() {
             </p>
           </div>
           {user?.role === "ADMIN" && (
-            <a
-              href="/api/admin/usage-report"
+            <Link
+              href="/admin/usage-report"
+              target="_blank"
               className="inline-flex items-center gap-2 px-3 py-2 md:px-4 bg-primary hover:bg-primary/90 text-white text-sm font-medium rounded-lg transition-colors shrink-0"
             >
-              <span className="material-symbols-outlined text-lg">download</span>
-              <span className="hidden sm:inline">Export Usage Report</span>
-              <span className="sm:hidden">Export</span>
-            </a>
+              <span className="material-symbols-outlined text-lg">bar_chart</span>
+              <span className="hidden sm:inline">Usage Report</span>
+              <span className="sm:hidden">Report</span>
+            </Link>
           )}
         </div>
 
