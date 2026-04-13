@@ -25,7 +25,7 @@ interface ReportData {
     registeredAdvisors: number;
     activeAdvisors: number;
     noActivity: number;
-    adminAccounts: number;
+    staffAccounts: number;
     adoptionPercent: number;
   };
   dailyVolume: { date: string; count: number }[];
@@ -576,8 +576,8 @@ export default function UsageReportPage() {
                     <span>{data.adoption.noActivity}</span>
                   </div>
                   <div className="adoption-stat">
-                    <span>Admin accounts</span>
-                    <span>{data.adoption.adminAccounts}</span>
+                    <span>Staff accounts</span>
+                    <span>{data.adoption.staffAccounts}</span>
                   </div>
                 </div>
               </div>

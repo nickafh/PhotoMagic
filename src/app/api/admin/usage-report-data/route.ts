@@ -27,6 +27,7 @@ export async function GET() {
         status: true,
         userId: true,
         user: { select: { name: true, email: true } },
+        collaborators: { select: { id: true, name: true, email: true } },
         _count: { select: { photos: true, submissions: true } },
       },
     }),
@@ -54,10 +55,35 @@ export async function GET() {
     draft: listings.filter((l) => l.status === "DRAFT").length,
   };
 
-  // Adoption
-  const adminAccounts = users.filter((u) => u.role === "ADMIN").length;
+  // Build advisor lookup (used by adoption + top users)
+  const advisorMap = new Map<string, { name: string; email: string }>();
+  for (const u of users) {
+    if (u.role === "ADVISOR") {
+      advisorMap.set(u.id, { name: u.name || u.email, email: u.email });
+    }
+  }
+
+  // Adoption — based on ADVISOR role users who have been sent a listing
+  const registeredAdvisors = advisorMap.size;
+  const activeAdvisorIds = new Set<string>();
+  for (const listing of listings) {
+    for (const collab of listing.collaborators) {
+      if (advisorMap.has(collab.id)) {
+        activeAdvisorIds.add(collab.id);
+      }
+    }
+    if (advisorMap.has(listing.userId)) {
+      activeAdvisorIds.add(listing.userId);
+    }
+  }
+  const activeAdvisors = activeAdvisorIds.size;
+  const staffAccounts = users.filter(
+    (u) => u.role === "ADMIN" || u.role === "LISTINGS"
+  ).length;
   const adoptionPercent =
-    totalUsers > 0 ? Math.round((activeUsers / totalUsers) * 100) : 0;
+    registeredAdvisors > 0
+      ? Math.round((activeAdvisors / registeredAdvisors) * 100)
+      : 0;
 
   // Daily volume - group submissions by date
   const volumeMap = new Map<string, number>();
@@ -71,30 +97,41 @@ export async function GET() {
     count,
   }));
 
-  // Top advisors by listing count (only ADVISOR role users)
-  const advisorIds = new Set(
-    users.filter((u) => u.role === "ADVISOR").map((u) => u.id)
-  );
-  const userListingMap = new Map<
+  // Top advisors by listings sent to them (collaborators = advisors a listing was proposed to)
+  const advisorListingMap = new Map<
     string,
     { name: string; listings: number; photos: number }
   >();
   for (const listing of listings) {
-    const uid = listing.userId;
-    if (!advisorIds.has(uid)) continue;
-    const existing = userListingMap.get(uid);
-    if (existing) {
-      existing.listings++;
-      existing.photos += listing._count.photos;
-    } else {
-      userListingMap.set(uid, {
+    // Count each advisor collaborator on this listing
+    for (const collab of listing.collaborators) {
+      if (!advisorMap.has(collab.id)) continue;
+      const existing = advisorListingMap.get(collab.id);
+      if (existing) {
+        existing.listings++;
+        existing.photos += listing._count.photos;
+      } else {
+        advisorListingMap.set(collab.id, {
+          name: collab.name || collab.email,
+          listings: 1,
+          photos: listing._count.photos,
+        });
+      }
+    }
+    // Also count if an advisor owns the listing directly
+    if (advisorMap.has(listing.userId) && !advisorListingMap.has(listing.userId)) {
+      advisorListingMap.set(listing.userId, {
         name: listing.user.name || listing.user.email,
         listings: 1,
         photos: listing._count.photos,
       });
+    } else if (advisorMap.has(listing.userId) && !listing.collaborators.some((c) => c.id === listing.userId)) {
+      const existing = advisorListingMap.get(listing.userId)!;
+      existing.listings++;
+      existing.photos += listing._count.photos;
     }
   }
-  const topUsers = Array.from(userListingMap.values())
+  const topUsers = Array.from(advisorListingMap.values())
     .sort((a, b) => b.listings - a.listings)
     .slice(0, 10);
 
@@ -153,10 +190,10 @@ export async function GET() {
     },
     statusBreakdown,
     adoption: {
-      registeredAdvisors: totalUsers,
-      activeAdvisors: activeUsers,
-      noActivity: totalUsers - activeUsers,
-      adminAccounts,
+      registeredAdvisors,
+      activeAdvisors,
+      noActivity: registeredAdvisors - activeAdvisors,
+      staffAccounts,
       adoptionPercent,
     },
     dailyVolume,
