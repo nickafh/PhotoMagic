@@ -417,6 +417,9 @@ export async function getAllListings(options?: {
         orderBy: { sortOrder: "asc" },
       },
       user: true,
+      collaborators: {
+        select: { id: true, name: true, email: true },
+      },
       submissions: {
         orderBy: { createdAt: "desc" },
         take: 1,

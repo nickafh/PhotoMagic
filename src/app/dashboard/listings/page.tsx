@@ -9,12 +9,18 @@ import StatusBadge from "@/components/StatusBadge";
 import type { ListingWithPhotosAndUser } from "@/lib/types";
 import { Suspense } from "react";
 
+type Collaborator = { id: string; name: string | null; email: string };
+type ListingRow = ListingWithPhotosAndUser & {
+  collaborators?: Collaborator[];
+  downloadedAt?: string | null;
+};
+
 function AllListingsContent() {
   const { data: session, status: authStatus } = useSession();
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  const [listings, setListings] = useState<ListingWithPhotosAndUser[]>([]);
+  const [listings, setListings] = useState<ListingRow[]>([]);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState(searchParams.get("search") || "");
@@ -155,6 +161,12 @@ function AllListingsContent() {
                       Status
                     </th>
                     <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                      Sent To
+                    </th>
+                    <th className="text-center px-6 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                      Downloaded
+                    </th>
+                    <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                       Updated
                     </th>
                     <th className="px-6 py-3"></th>
@@ -182,6 +194,18 @@ function AllListingsContent() {
                       </td>
                       <td className="px-6 py-4">
                         <StatusBadge status={listing.status} />
+                      </td>
+                      <td className="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">
+                        {listing.collaborators && listing.collaborators.length > 0
+                          ? listing.collaborators
+                              .map((c) => c.name || c.email)
+                              .join(", ")
+                          : ""}
+                      </td>
+                      <td className="px-6 py-4 text-center">
+                        {listing.downloadedAt && (
+                          <span className="material-symbols-outlined text-green-500 text-lg">check_circle</span>
+                        )}
                       </td>
                       <td className="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">
                         {new Date(listing.updatedAt).toLocaleDateString("en-US", {

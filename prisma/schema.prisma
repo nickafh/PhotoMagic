@@ -55,6 +55,7 @@ model Listing {
   collaborators    User[]                 @relation("ListingCollaborators")
   photos           Photo[]
   submissions      PhotoOrderSubmission[]
+  downloadedAt     DateTime?
   createdAt        DateTime               @default(now())
   updatedAt        DateTime               @updatedAt
 

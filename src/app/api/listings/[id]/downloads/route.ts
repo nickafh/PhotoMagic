@@ -6,6 +6,7 @@ import { canDownloadListing } from "@/lib/permissions";
 import { zipFilenameForListing } from "@/lib/zip";
 import { pad3, sanitizeAddress } from "@/lib/sanitize";
 import { downloadStream, getBlobSize } from "@/lib/blob";
+import prisma from "@/lib/db";
 import archiver from "archiver";
 
 export const runtime = "nodejs";
@@ -84,6 +85,14 @@ export async function GET(req: Request, ctx: Ctx) {
 
     if (photoEntries.length === 0) {
       return NextResponse.json({ error: "No photos available to download" }, { status: 404 });
+    }
+
+    // Record the download timestamp (only set once, on first download)
+    if (!listingWithUser.downloadedAt) {
+      await prisma.listing.update({
+        where: { id },
+        data: { downloadedAt: new Date() },
+      });
     }
 
     // Fetch all blob sizes in parallel (lightweight HEAD requests, no data downloaded)

@@ -71,13 +71,17 @@ export async function GET() {
     count,
   }));
 
-  // Top users by listing count
+  // Top advisors by listing count (only ADVISOR role users)
+  const advisorIds = new Set(
+    users.filter((u) => u.role === "ADVISOR").map((u) => u.id)
+  );
   const userListingMap = new Map<
     string,
     { name: string; listings: number; photos: number }
   >();
   for (const listing of listings) {
     const uid = listing.userId;
+    if (!advisorIds.has(uid)) continue;
     const existing = userListingMap.get(uid);
     if (existing) {
       existing.listings++;
