@@ -65,16 +65,19 @@ export async function POST(req: Request, ctx: Ctx) {
   // Add all selected advisors as collaborators on the listing
   await addCollaboratorsToListing(id, advisorIds);
 
-  // Create a single submission (proposedToUserId uses the first advisor for backward compat)
-  const submission = await createSubmission({
-    listingId: id,
-    initiatorRole: "LISTINGS",
-    approverRole: "ADVISOR",
-    orderedPhotoIds,
-    submittedByUserId: user.id,
-    note,
-    proposedToUserId: advisorIds[0],
-  });
+  // Create a submission for each advisor so all can see it in "My Listings"
+  let submission;
+  for (const advisorId of advisorIds) {
+    submission = await createSubmission({
+      listingId: id,
+      initiatorRole: "LISTINGS",
+      approverRole: "ADVISOR",
+      orderedPhotoIds,
+      submittedByUserId: user.id,
+      note,
+      proposedToUserId: advisorId,
+    });
+  }
 
   // Send notification emails to all selected advisors
   try {
