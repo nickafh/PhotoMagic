@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { getAuthenticatedUser } from "@/lib/auth-helpers";
-import { getListingWithUser, updateListing, createSubmission, getListingsTeamMembers } from "@/lib/store";
+import { getListingWithUser, updateListing, createSubmission } from "@/lib/store";
 import { canModifyListing } from "@/lib/permissions";
 import { sendEmail, buildSubmissionEmail } from "@/lib/email";
 import { getTenant } from "@/lib/tenant";
@@ -74,28 +74,24 @@ export async function POST(_req: Request, ctx: Ctx) {
     console.error("Failed to create submission snapshot:", err);
   }
 
-  // Send notification email to all LISTINGS and ADMIN users
+  // Send notification email to the listings team inbox
   try {
     const tenant = await getTenant();
-    const teamMembers = await getListingsTeamMembers();
-    const { subject, body } = buildSubmissionEmail({
-      listingAddress: listingWithUser.address,
-      listingId: listingWithUser.id,
-      submitterName: user.name || "Unknown",
-      submitterEmail: user.email,
-      photoCount: activePhotoCount,
-      baseUrl: tenant.baseUrl,
-    });
-
-    for (const member of teamMembers) {
-      if (member.email !== user.email) {
-        await sendEmail({
-          to: member.email,
-          subject,
-          body,
-          from: tenant.fromEmail,
-        });
-      }
+    if (tenant.listingsTeamEmail && tenant.listingsTeamEmail !== user.email) {
+      const { subject, body } = buildSubmissionEmail({
+        listingAddress: listingWithUser.address,
+        listingId: listingWithUser.id,
+        submitterName: user.name || "Unknown",
+        submitterEmail: user.email,
+        photoCount: activePhotoCount,
+        baseUrl: tenant.baseUrl,
+      });
+      await sendEmail({
+        to: tenant.listingsTeamEmail,
+        subject,
+        body,
+        from: tenant.fromEmail,
+      });
     }
   } catch (error) {
     // Log error but don't fail the submission
